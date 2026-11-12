@@ -6,6 +6,8 @@ band-limited audio signals (square wave by default) in real time, shows what is
 playing on a live oscilloscope and spectrum, records the output, and exports
 WAV files. No backend, no account: everything runs in your browser.
 
+**Live app:** https://trosck.github.io/Tesla-Coil-Studio/
+
 The coil modulates its arc from the incoming audio. The app only produces
 audio on your device's normal sound output; your operating system sends it to
 the coil over Bluetooth. The app never controls the coil, its power or the
