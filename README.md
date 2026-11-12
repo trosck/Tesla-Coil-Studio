@@ -98,3 +98,7 @@ discharge area during operation.
 Also: keep electronics, pacemakers and flammable materials away from the coil,
 run it in a ventilated room (arcs produce ozone), and never leave it running
 unattended.
+
+## License
+
+Released into the public domain under the [Unlicense](LICENSE).

@@ -3,6 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "description": "Browser-only music generator for Bluetooth musical Tesla coils",
+  "license": "Unlicense",
   "type": "module",
   "scripts": {
     "dev": "vite",
