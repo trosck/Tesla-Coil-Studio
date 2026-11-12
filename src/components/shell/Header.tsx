@@ -2,18 +2,9 @@ import { useEffect, useState } from 'react';
 import type { OutputDevice } from '../../audio/engine';
 import { usePlayback, useStudio } from '../../studio/StudioContext';
 import { Button, Icon, Select } from '../ui';
+import { STATUS_TEXT } from './audioStatus';
 import { openGuide } from './guideStore';
-
-const STATUS_TEXT: Record<string, string> = {
-  uninitialized: 'Audio off',
-  starting: 'Starting…',
-  running: 'Output live',
-  suspended: 'Suspended',
-  interrupted: 'Interrupted',
-  closed: 'Closed',
-  unsupported: 'Web Audio unsupported',
-  error: 'Audio error',
-};
+import { StatusHelp } from './StatusHelp';
 
 export function Header() {
   const { engine } = useStudio();
@@ -41,8 +32,6 @@ export function Header() {
     };
   }, [canSelect, engine]);
 
-  const needsEnable = status === 'uninitialized' || status === 'suspended' || status === 'interrupted' || status === 'error';
-
   return (
     <header className="app-header">
       <div className="app-brand">
@@ -64,16 +53,14 @@ export function Header() {
             options={[{ value: '', label: 'System default output' }, ...devices.filter((d) => d.deviceId !== 'default' && d.deviceId !== '').map((d) => ({ value: d.deviceId, label: d.label }))]}
           />
         )}
-        <div className={`app-status__pill app-status__pill--${status}`} title={error ?? undefined} role="status">
-          <span className="app-status__dot" aria-hidden="true" />
-          <span>{STATUS_TEXT[status] ?? status}</span>
-          {running && sampleRate && <span className="mono app-status__sr">{(sampleRate / 1000).toFixed(1)} kHz</span>}
+        <div className={`app-status__pill app-status__pill--${status}`} title={error ?? undefined}>
+          <span className="app-status__live" role="status">
+            <span className="app-status__dot" aria-hidden="true" />
+            <span>{STATUS_TEXT[status] ?? status}</span>
+            {running && sampleRate && <span className="mono app-status__sr">{(sampleRate / 1000).toFixed(1)} kHz</span>}
+          </span>
+          <StatusHelp status={status} error={error} />
         </div>
-        {needsEnable && (
-          <Button variant="primary" className="app-status__enable" icon={<Icon name="speaker" />} onClick={() => void engine.ensureStarted().catch(() => undefined)} title="Browsers need one click or tap before they play sound">
-            {status === 'error' ? 'Retry audio' : 'Enable audio'}
-          </Button>
-        )}
         <Button variant="ghost" icon={<Icon name="help" />} onClick={openGuide} aria-haspopup="dialog">
           Setup guide
         </Button>

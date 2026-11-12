@@ -23,6 +23,12 @@
     flex: 1 1 100%;
     min-width: 0;
   }
+  .app-status__pill {
+    min-width: 0;
+  }
+  .app-status__live {
+    overflow: hidden;
+  }
 }
 
 /* header */
@@ -75,8 +81,10 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
+  max-width: 100%;
   height: var(--control-h);
-  padding: 0 var(--space-3);
+  /* the "?" help button sits at the right end, inset like the left padding of the dot */
+  padding: 0 var(--space-1) 0 var(--space-3);
   border: 1px solid var(--border);
   border-radius: 999px;
   background: var(--surface);
@@ -90,19 +98,33 @@
   background: var(--text-faint);
   transition: background var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
 }
-.app-status__pill--running .app-status__dot {
+.app-status__pill--running .app-status__dot,
+.status-help__row--running .app-status__dot {
   background: var(--ok);
   box-shadow: 0 0 8px var(--ok);
 }
 .app-status__pill--suspended .app-status__dot,
 .app-status__pill--interrupted .app-status__dot,
-.app-status__pill--starting .app-status__dot {
+.app-status__pill--starting .app-status__dot,
+.status-help__row--suspended .app-status__dot,
+.status-help__row--interrupted .app-status__dot,
+.status-help__row--starting .app-status__dot {
   background: var(--warn);
 }
 .app-status__pill--error .app-status__dot,
 .app-status__pill--unsupported .app-status__dot,
-.app-status__pill--closed .app-status__dot {
+.app-status__pill--closed .app-status__dot,
+.status-help__row--error .app-status__dot,
+.status-help__row--unsupported .app-status__dot,
+.status-help__row--closed .app-status__dot {
   background: var(--danger);
+}
+.app-status__live {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  white-space: nowrap;
 }
 .app-status__sr {
   color: var(--text-faint);

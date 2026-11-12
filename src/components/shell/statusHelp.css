@@ -1,0 +1,176 @@
+/* Audio status help: compact "?" trigger inside the header status pill + fixed tooltip */
+.status-help__btn {
+  position: relative;
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-faint);
+  cursor: help;
+  touch-action: manipulation;
+  transition:
+    color var(--dur) var(--ease),
+    border-color var(--dur) var(--ease),
+    background var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease);
+}
+.status-help__btn:hover,
+.status-help__btn[aria-expanded='true'] {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: rgb(34 229 255 / 0.08);
+}
+.status-help__btn:focus-visible {
+  outline: none;
+  color: var(--accent);
+  border-color: var(--accent);
+  box-shadow: var(--accent-glow);
+}
+@media (pointer: coarse) {
+  .status-help__btn {
+    width: 28px;
+    height: 28px;
+  }
+  /* Enlarge the touch target beyond the visible circle without growing the pill. */
+  .status-help__btn::after {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+  }
+}
+
+.status-help {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  width: min(360px, calc(100vw - 32px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--space-3);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--bg-elev);
+  color: var(--text);
+  font-size: 12px;
+  line-height: 1.45;
+  box-shadow: 0 18px 48px rgb(0 0 0 / 0.55), 0 0 0 1px rgb(34 229 255 / 0.12), 0 0 24px rgb(162 89 255 / 0.12);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-4px) scale(0.98);
+  transform-origin: var(--status-help-arrow-x, 50%) top;
+  transition:
+    opacity var(--dur) var(--ease),
+    transform var(--dur) var(--ease),
+    visibility 0s linear var(--dur);
+}
+.status-help[data-placement='above'] {
+  transform: translateY(4px) scale(0.98);
+  transform-origin: var(--status-help-arrow-x, 50%) bottom;
+}
+.status-help[data-open='true'] {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: none;
+  transition:
+    opacity var(--dur) var(--ease),
+    transform var(--dur) var(--ease),
+    visibility 0s;
+}
+.status-help__title {
+  margin: 0 0 2px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.status-help__intro {
+  margin: 0 0 var(--space-2);
+  color: var(--text-dim);
+}
+.status-help__list {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.status-help__row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: 6px var(--space-2);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+}
+.status-help__row .app-status__dot {
+  flex: none;
+  margin-top: 5px;
+}
+.status-help__row.is-current {
+  border-color: rgb(34 229 255 / 0.55);
+  background: linear-gradient(90deg, rgb(34 229 255 / 0.1), rgb(162 89 255 / 0.08));
+  box-shadow: 0 0 14px rgb(34 229 255 / 0.15);
+}
+.status-help__body {
+  min-width: 0;
+}
+.status-help__label {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  font-weight: 600;
+  color: var(--text);
+}
+.status-help__badge {
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--bg);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 16px;
+}
+.status-help__text {
+  margin: 1px 0 0;
+  color: var(--text-dim);
+}
+.status-help__text strong {
+  font-weight: 600;
+  color: var(--text);
+}
+.status-help__error {
+  margin: var(--space-1) 0 0;
+  padding: var(--space-1) var(--space-2);
+  border-left: 2px solid var(--danger);
+  background: rgb(255 77 109 / 0.08);
+  color: var(--danger);
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+.status-help__note {
+  margin: var(--space-2) 0 0;
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--border);
+  color: var(--text-faint);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .status-help,
+  .status-help[data-placement='above'],
+  .status-help[data-open='true'] {
+    transform: none;
+  }
+}

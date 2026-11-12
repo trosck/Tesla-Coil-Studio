@@ -41,8 +41,9 @@ automatically on your first visit).
 3. Set the coil's switch to **Music mode**.
 4. Set the **system volume moderately** (≈50%) and raise it slowly.
 5. **Pick a preset** — *Test Signal* (steady 440 Hz) is ideal for a first check.
-6. Press **Play** (or Space). The first click/tap also unlocks browser audio
-   ("Enable audio" in the header does the same).
+6. Press **Play** (or Space). The first click/tap also unlocks browser audio;
+   if audio gets suspended or fails to start, pressing **Play** resumes or
+   retries it.
 
 Tips: the square wave gives the clearest arcs; avoid very high volume
 (clipping/distortion); Bluetooth adds about 100–300 ms of latency, so the

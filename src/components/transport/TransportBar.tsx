@@ -82,6 +82,8 @@ export function TransportBar() {
 
   const audioStatus = usePlayback((s) => s.audioStatus);
   const audioLocked = audioStatus === 'uninitialized' || audioStatus === 'suspended' || audioStatus === 'interrupted';
+  // Still "playing" but the browser/system paused the AudioContext (or it failed): PLAY resumes/retries it.
+  const needsResume = isPlaying && (audioStatus === 'suspended' || audioStatus === 'interrupted' || audioStatus === 'error');
   const recLabel = `${Math.floor(recSeconds / 60)}:${String(recSeconds % 60).padStart(2, '0')}`;
 
   return (
@@ -91,13 +93,13 @@ export function TransportBar() {
           variant="primary"
           size="lg"
           icon={<Icon name="play" />}
-          onClick={() => void play()}
-          disabled={!canPlay || isPlaying}
+          onClick={() => void (needsResume ? engine.ensureStarted() : play()).catch(() => undefined)}
+          disabled={!canPlay || (isPlaying && !needsResume)}
           className={['transport__btn', isPlaying && 'transport__playing'].filter(Boolean).join(' ')}
           data-space="transport"
           title={activePlayable || isPaused ? 'Play (Space)' : 'This mode has nothing to play yet'}
         >
-          <span className="transport__label">{isPaused ? 'RESUME' : isPlaying ? 'PLAYING' : 'PLAY'}</span>
+          <span className="transport__label">{isPaused || needsResume ? 'RESUME' : isPlaying ? 'PLAYING' : 'PLAY'}</span>
         </Button>
         <Button size="lg" className="transport__btn" icon={<Icon name="pause" />} onClick={pause} disabled={!isPlaying} data-space="transport" title="Pause (Space)">
           <span className="transport__label">PAUSE</span>
@@ -143,7 +145,7 @@ export function TransportBar() {
         </span>
         {audioLocked ? (
           <span>
-            <strong>Tap PLAY or “Enable audio” to start sound</strong> — browsers need one tap first. This app controls only the audio signal, not the coil&apos;s electrical power.
+            <strong>Tap PLAY to start sound</strong> — browsers need one tap first. This app controls only the audio signal, not the coil&apos;s electrical power.
           </span>
         ) : (
           <span>This app controls only the audio signal, not the coil&apos;s electrical power.</span>
