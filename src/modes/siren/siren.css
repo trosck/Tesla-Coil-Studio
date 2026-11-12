@@ -1,0 +1,37 @@
+.mode-siren {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.mode-siren__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: var(--space-3);
+}
+.mode-siren__stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.mode-siren__quick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.mode-siren__quick .ui-btn {
+  min-height: 36px;
+}
+.mode-siren__readout {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--cyan);
+  text-shadow: 0 0 8px rgb(34 229 255 / 0.45);
+  white-space: nowrap;
+}
+.mode-siren .ui-seg {
+  display: flex;
+}
+.mode-siren .ui-seg__opt {
+  flex: 1 1 auto;
+  min-height: 36px;
+}

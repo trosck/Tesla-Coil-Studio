@@ -1,0 +1,101 @@
+.mode-pulse {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.mode-pulse__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: var(--space-3);
+}
+.mode-pulse__stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.mode-pulse__row,
+.mode-pulse__quick,
+.mode-pulse__patterns {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+.mode-pulse__quick .ui-btn,
+.mode-pulse__patterns .ui-btn {
+  min-height: 36px;
+}
+.mode-pulse__readout {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--cyan);
+  text-shadow: 0 0 8px rgb(34 229 255 / 0.45);
+  white-space: nowrap;
+}
+.mode-pulse__tip,
+.mode-pulse__rule {
+  margin: 0;
+  color: var(--text-faint);
+  font-size: 12px;
+}
+.mode-pulse__warn {
+  margin: 0;
+  color: var(--warn);
+  font-size: 13px;
+}
+
+/* step strip */
+.mode-pulse__strip {
+  --cols: 16;
+  display: grid;
+  grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+  gap: 4px;
+  padding: var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+}
+.mode-pulse__cell {
+  display: block;
+  height: 34px;
+  min-width: 0;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  transition: background var(--dur) var(--ease), box-shadow 60ms linear, border-color var(--dur) var(--ease);
+}
+.mode-pulse__cell--beat {
+  border-color: var(--border-strong);
+}
+.mode-pulse__cell--on {
+  background: rgb(34 229 255 / 0.35);
+  border-color: rgb(34 229 255 / 0.6);
+}
+.mode-pulse__cell--accent {
+  background: var(--cyan);
+  border-color: var(--cyan);
+  box-shadow: 0 0 10px rgb(34 229 255 / 0.55);
+}
+.mode-pulse__cell--now {
+  outline: 2px solid var(--purple);
+  outline-offset: 1px;
+  box-shadow: var(--purple-glow);
+}
+.mode-pulse__strip--edit .mode-pulse__cell {
+  height: var(--touch-h);
+  cursor: pointer;
+}
+.mode-pulse__strip--edit .mode-pulse__cell:hover {
+  border-color: var(--cyan);
+}
+.mode-pulse__strip--edit .mode-pulse__cell:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 1px;
+}
+
+@media (max-width: 560px) {
+  .mode-pulse__strip--c16 {
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+  }
+}

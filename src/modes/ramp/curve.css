@@ -1,0 +1,46 @@
+/* Shared frequency-trajectory preview (Ramp + Siren). */
+.mode-ramp-curve {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+.mode-ramp-curve__svg {
+  display: block;
+  width: 100%;
+  height: 140px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background:
+    linear-gradient(180deg, rgb(34 229 255 / 0.04), transparent 60%),
+    repeating-linear-gradient(90deg, transparent 0 39px, rgb(255 255 255 / 0.03) 39px 40px),
+    var(--bg);
+}
+.mode-ramp-curve__grid {
+  stroke: var(--border);
+  stroke-width: 1;
+  stroke-dasharray: 3 5;
+}
+.mode-ramp-curve__area {
+  fill: rgb(34 229 255 / 0.08);
+}
+.mode-ramp-curve__line {
+  fill: none;
+  stroke: var(--cyan);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 4px rgb(34 229 255 / 0.6));
+}
+.mode-ramp-curve__playhead {
+  stroke: var(--purple);
+  stroke-width: 2;
+  filter: drop-shadow(0 0 4px rgb(162 89 255 / 0.8));
+}
+.mode-ramp-curve__axis {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-faint);
+}

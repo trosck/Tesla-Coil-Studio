@@ -1,0 +1,313 @@
+/* MIDI mode. Prefix: .mode-midi */
+.mode-midi {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+.mode-midi .ui-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.mode-midi .ui-panel__head {
+  margin-bottom: 0;
+  flex-wrap: wrap;
+}
+.mode-midi .ui-panel__actions {
+  flex-wrap: wrap;
+  align-items: center;
+}
+.mode-midi__top {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  gap: var(--space-4);
+  align-items: start;
+}
+.mode-midi__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: var(--space-4);
+  align-items: start;
+}
+.mode-midi__muted {
+  color: var(--text-faint);
+  font-size: 12px;
+}
+.mode-midi__warn {
+  margin: 0;
+  color: var(--warn);
+  font-size: 12px;
+}
+.mode-midi__error {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid rgb(255 77 109 / 0.5);
+  border-radius: var(--radius-sm);
+  background: rgb(255 77 109 / 0.1);
+  color: var(--danger);
+  font-size: 13px;
+}
+.mode-midi p {
+  margin: 0;
+}
+
+/* ---------- drop zone ---------- */
+.mode-midi__drop {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  min-height: 104px;
+  padding: var(--space-4);
+  border: 1.5px dashed var(--border-strong);
+  border-radius: var(--radius);
+  background:
+    repeating-linear-gradient(135deg, rgb(34 229 255 / 0.03) 0 8px, transparent 8px 16px),
+    var(--bg-elev);
+  text-align: center;
+  cursor: pointer;
+  transition:
+    border-color var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease),
+    background var(--dur) var(--ease);
+}
+.mode-midi__drop:hover,
+.mode-midi__drop:focus-within,
+.mode-midi__drop[data-dragging] {
+  border-color: var(--accent);
+  box-shadow: var(--accent-glow);
+}
+.mode-midi__drop[data-dragging] {
+  background: rgb(34 229 255 / 0.08);
+}
+.mode-midi__file {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+}
+.mode-midi__drop-title {
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--text);
+}
+.mode-midi__drop-sub {
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+/* ---------- info / stats ---------- */
+.mode-midi__info,
+.mode-midi__stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: var(--space-2);
+  margin: 0;
+}
+.mode-midi__info > div,
+.mode-midi__stats > div {
+  min-width: 0;
+  padding: var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-elev);
+}
+.mode-midi__info dt,
+.mode-midi__stats dt {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+.mode-midi__info dd,
+.mode-midi__stats dd {
+  margin: 2px 0 0;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mode-midi__stats dd {
+  color: var(--accent);
+  text-shadow: 0 0 10px rgb(34 229 255 / 0.35);
+}
+.mode-midi__tempos {
+  overflow-wrap: anywhere;
+}
+
+/* ---------- tracks ---------- */
+.mode-midi__tracks {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  max-height: 300px;
+  overflow-y: auto;
+}
+.mode-midi__track {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: var(--touch-h);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-elev);
+  color: var(--text-dim);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  transition:
+    border-color var(--dur) var(--ease),
+    background var(--dur) var(--ease),
+    color var(--dur) var(--ease);
+}
+.mode-midi__track:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-2);
+}
+.mode-midi__track:focus-visible {
+  outline: none;
+  box-shadow: var(--accent-glow);
+}
+.mode-midi__track[aria-checked='true'] {
+  border-color: rgb(34 229 255 / 0.55);
+  background: rgb(34 229 255 / 0.07);
+  color: var(--text);
+}
+.mode-midi__check {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 4px;
+  background: var(--surface);
+}
+.mode-midi__track[aria-checked='true'] .mode-midi__check {
+  border-color: var(--accent);
+  background: var(--accent);
+  box-shadow: 0 0 10px rgb(34 229 255 / 0.5);
+}
+.mode-midi__track-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+.mode-midi__track-name {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mode-midi__track-inst {
+  font-size: 12px;
+  color: var(--text-faint);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mode-midi__track-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  white-space: nowrap;
+}
+.mode-midi__badge {
+  padding: 0 6px;
+  border: 1px solid rgb(255 194 74 / 0.5);
+  border-radius: 999px;
+  color: var(--warn);
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.mode-midi__track[data-drums] .mode-midi__track-name {
+  color: var(--text-dim);
+}
+
+/* ---------- piano roll ---------- */
+.mode-midi__roll {
+  display: block;
+  width: 100%;
+  height: clamp(200px, 38vh, 360px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  box-shadow: inset 0 0 30px rgb(0 0 0 / 0.5);
+  touch-action: pan-y;
+}
+.mode-midi__roll[data-interactive] {
+  cursor: crosshair;
+}
+.mode-midi__legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+  font-size: 12px;
+  color: var(--text-dim);
+}
+.mode-midi__legend > span {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.mode-midi__swatch {
+  display: inline-block;
+  width: 18px;
+  height: 6px;
+  border-radius: 2px;
+}
+.mode-midi__swatch--orig {
+  background: var(--purple);
+  opacity: 0.45;
+}
+.mode-midi__swatch--mono {
+  background: var(--cyan);
+  box-shadow: 0 0 8px rgb(34 229 255 / 0.6);
+}
+.mode-midi__empty {
+  color: var(--text-faint);
+  font-size: 13px;
+  text-align: center;
+}
+
+/* ---------- controls ---------- */
+.mode-midi__row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+.mode-midi__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.mode-midi .ui-seg {
+  flex-wrap: wrap;
+}
+
+@media (max-width: 520px) {
+  .mode-midi__row {
+    grid-template-columns: 1fr;
+  }
+  .mode-midi__track-meta {
+    font-size: 11px;
+  }
+}
