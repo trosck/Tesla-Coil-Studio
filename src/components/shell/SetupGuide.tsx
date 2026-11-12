@@ -1,0 +1,101 @@
+import { useEffect, useRef } from 'react';
+import { BUILT_IN_PRESETS } from '../../presets/builtIn';
+import { useStudio } from '../../studio/StudioContext';
+import { Button, Icon } from '../ui';
+import { closeGuide } from './guideStore';
+import { SAFETY_TEXT } from './SafetyNotice';
+import './shell.css';
+
+const TEST_SIGNAL = BUILT_IN_PRESETS.find((p) => p.id === 'builtin-test-signal');
+
+const STEPS: { title: string; body: string }[] = [
+  {
+    title: 'Pair the receiver',
+    body: 'Power the coil as its manual describes. Open the Bluetooth settings of your computer or phone and pair the MH-M18 receiver (it usually shows up as “MH-M18” or similar; PIN 0000 if asked).',
+  },
+  {
+    title: 'Select it as audio output',
+    body: 'Make the receiver the system sound output (macOS: Control Center → Sound; Windows: Sound output; phones switch automatically). In Chrome and Edge you can also pick it with the output selector in the header.',
+  },
+  { title: 'Switch the coil to Music mode', body: 'Set the mode switch on the coil to Music (audio) mode so it follows the incoming signal.' },
+  { title: 'Set a moderate volume', body: 'Start with the system volume around 50% and the Master volume here at a medium level, then raise it slowly.' },
+  { title: 'Pick a preset', body: 'Open the Presets tab and choose one — “Test Signal” is a steady 440 Hz tone, ideal for a first check.' },
+  { title: 'Press Play', body: 'Press ▶ on a preset card or the big PLAY button (Space also toggles play/pause). The first tap also unlocks browser audio.' },
+];
+
+const TIPS = [
+  'Square wave (the default) gives the loudest, clearest arcs; the duty cycle slider changes tone and arc intensity.',
+  'Avoid very high volume: an overdriven signal clips and distorts. The app keeps its own output below full scale, but system or receiver gain can still overdrive it.',
+  'Bluetooth adds roughly 100–300 ms of latency, so the visualizer may run slightly ahead of the sound.',
+  'On phones, keep the screen on and this tab in the foreground — browsers may pause audio in the background.',
+  'Use EXPORT WAV to save a track and play it from any music player, or RECORD to capture what you play live.',
+];
+
+/** First-visit setup guide (modal). Rendered by App while guideStore.open is true. */
+export function SetupGuide() {
+  const ref = useRef<HTMLDialogElement>(null);
+  const { loadPreset } = useStudio();
+
+  useEffect(() => {
+    const d = ref.current;
+    // No close() in cleanup (StrictMode double-mount would fire onClose). Unmount removes it.
+    if (d && !d.open) d.showModal();
+  }, []);
+
+  const playTest = () => {
+    if (TEST_SIGNAL) loadPreset(TEST_SIGNAL, { play: true, open: false });
+    closeGuide();
+  };
+
+  return (
+    <dialog ref={ref} className="guide" aria-labelledby="guide-title" onCancel={closeGuide} onClose={closeGuide}>
+      <header className="guide__head">
+        <div>
+          <p className="guide__kicker">Setup guide</p>
+          <h2 id="guide-title">Make your Tesla coil sing</h2>
+        </div>
+        <Button variant="ghost" size="sm" aria-label="Close setup guide" icon={<Icon name="close" />} onClick={closeGuide} />
+      </header>
+      <div className="guide__body">
+        <p className="guide__intro">
+          Tesla Coil Studio only plays audio on your device&apos;s normal sound output. Your operating system sends it over Bluetooth to the coil&apos;s receiver.
+        </p>
+        <ol className="guide__steps">
+          {STEPS.map((s, i) => (
+            <li key={s.title} className="guide__step">
+              <span className="guide__num mono" aria-hidden="true">
+                {i + 1}
+              </span>
+              <div>
+                <h3>{s.title}</h3>
+                <p>{s.body}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+        <section className="guide__tips" aria-labelledby="guide-tips">
+          <h3 id="guide-tips">Tips</h3>
+          <ul>
+            {TIPS.map((t) => (
+              <li key={t}>{t}</li>
+            ))}
+          </ul>
+        </section>
+        <section className="guide__safety" aria-labelledby="guide-safety">
+          <h3 id="guide-safety">⚠ Safety</h3>
+          <p>{SAFETY_TEXT}</p>
+        </section>
+      </div>
+      <footer className="guide__foot">
+        <Button variant="ghost" onClick={closeGuide}>
+          Close
+        </Button>
+        {TEST_SIGNAL && (
+          <Button variant="primary" icon={<Icon name="play" />} onClick={playTest}>
+            Play test signal
+          </Button>
+        )}
+      </footer>
+    </dialog>
+  );
+}

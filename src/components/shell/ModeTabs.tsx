@@ -1,4 +1,4 @@
-import { useRef, type KeyboardEvent } from 'react';
+import { useEffect, useRef, type KeyboardEvent } from 'react';
 import { ModeHost } from '../../studio/ModeHost';
 import { useStudio } from '../../studio/StudioContext';
 
@@ -7,6 +7,17 @@ export function ModeTabs() {
   const { modes, activeModeId, setActiveMode, sourceModeId } = useStudio();
   const listRef = useRef<HTMLDivElement>(null);
   const active = modes.find((m) => m.id === activeModeId) ?? modes[0]!;
+
+  // Keep the selected tab visible in the horizontally scrolling tab strip (mobile).
+  useEffect(() => {
+    const list = listRef.current;
+    const tab = list?.querySelector<HTMLElement>('[aria-selected="true"]');
+    if (!list || !tab) return;
+    const left = tab.offsetLeft - list.offsetLeft;
+    if (left < list.scrollLeft || left + tab.offsetWidth > list.scrollLeft + list.clientWidth) {
+      list.scrollLeft = Math.max(0, left - (list.clientWidth - tab.offsetWidth) / 2);
+    }
+  }, [activeModeId]);
 
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     const i = modes.findIndex((m) => m.id === activeModeId);
@@ -37,6 +48,7 @@ export function ModeTabs() {
               tabIndex={selected ? 0 : -1}
               className="modes__tab"
               data-source={m.id === sourceModeId || undefined}
+              title={m.id === sourceModeId && !selected ? 'PLAY / EXPORT use this mode' : undefined}
               onClick={() => setActiveMode(m.id)}
             >
               {m.label}

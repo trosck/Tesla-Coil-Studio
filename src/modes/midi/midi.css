@@ -104,7 +104,7 @@
 .mode-midi__info,
 .mode-midi__stats {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 96px), 1fr));
   gap: var(--space-2);
   margin: 0;
 }

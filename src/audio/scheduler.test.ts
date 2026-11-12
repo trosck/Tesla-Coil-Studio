@@ -85,4 +85,24 @@ describe('Scheduler', () => {
       [1000, 1100],
     ]);
   });
+
+  it('turning LOOP back on before the end keeps playing', () => {
+    const s = new Scheduler(SR);
+    s.start(seq, { startFrame: 0, loop: false });
+    s.advance(1500); // looks past the end: end is known
+    expect(s.endFrame).toBe(1000);
+    s.setLoop(true);
+    expect(s.endFrame).toBeNull();
+    const next = s.advance(1700);
+    expect(next.map((e) => e.startFrame)).toEqual([1000, 1500]);
+    expect(s.endFrame).toBeNull();
+  });
+
+  it('setLoop(true) does not extend past an export maxChunks limit', () => {
+    const s = new Scheduler(SR);
+    s.start(seq, { startFrame: 0, loop: false, maxChunks: 1 });
+    s.advance(1500);
+    s.setLoop(true);
+    expect(s.endFrame).toBe(1000);
+  });
 });

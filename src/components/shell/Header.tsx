@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import type { OutputDevice } from '../../audio/engine';
 import { usePlayback, useStudio } from '../../studio/StudioContext';
 import { Button, Icon, Select } from '../ui';
+import { openGuide } from './guideStore';
 
 const STATUS_TEXT: Record<string, string> = {
   uninitialized: 'Audio off',
@@ -57,6 +58,7 @@ export function Header() {
         {canSelect && devices.length > 1 && (
           <Select
             aria-label="Audio output device"
+            className="app-status__device"
             value={deviceId}
             onChange={(id) => void engine.setOutputDevice(id)}
             options={[{ value: '', label: 'System default output' }, ...devices.filter((d) => d.deviceId !== 'default' && d.deviceId !== '').map((d) => ({ value: d.deviceId, label: d.label }))]}
@@ -68,10 +70,13 @@ export function Header() {
           {running && sampleRate && <span className="mono app-status__sr">{(sampleRate / 1000).toFixed(1)} kHz</span>}
         </div>
         {needsEnable && (
-          <Button variant="primary" icon={<Icon name="speaker" />} onClick={() => void engine.ensureStarted().catch(() => undefined)}>
-            Enable audio
+          <Button variant="primary" className="app-status__enable" icon={<Icon name="speaker" />} onClick={() => void engine.ensureStarted().catch(() => undefined)} title="Browsers need one click or tap before they play sound">
+            {status === 'error' ? 'Retry audio' : 'Enable audio'}
           </Button>
         )}
+        <Button variant="ghost" icon={<Icon name="help" />} onClick={openGuide} aria-haspopup="dialog">
+          Setup guide
+        </Button>
       </div>
     </header>
   );

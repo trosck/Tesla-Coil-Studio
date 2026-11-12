@@ -12,7 +12,7 @@ bindPersistentSettings(engine);
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <StudioProvider engine={engine} modes={MODES}>
+    <StudioProvider engine={engine} modes={MODES} defaultModeId="presets" defaultSourceModeId="frequency">
       <App />
     </StudioProvider>
   </StrictMode>,

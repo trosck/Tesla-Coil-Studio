@@ -4,7 +4,7 @@
  */
 import { SynthCore } from '../dsp/synthCore';
 import { clipEvents, Scheduler, secondsToFrames } from '../scheduler';
-import type { Playable, Waveform } from '../types';
+import { toSource, type Playable, type Waveform } from '../types';
 import { encodeMonoWav } from './wavEncoder';
 
 export const EXPORT_SAMPLE_RATE = 44100;
@@ -13,7 +13,12 @@ export const MAX_EXPORT_SECONDS = 600;
 
 export interface RenderOptions {
   sampleRate?: number;
-  /** Render this many chunks/loops (default 1). Ignored when durationSeconds is set. */
+  /**
+   * Render this many loops (default 1). One loop = one pass of the material:
+   * a Sequence, or all `chunkCount` chunks of a finite SequenceSource (e.g. a
+   * sequencer chain A→B); for endless sources one loop = one chunk.
+   * Ignored when durationSeconds is set.
+   */
   loops?: number;
   /** Render exactly this many seconds (loops the material as needed). */
   durationSeconds?: number;
@@ -27,6 +32,12 @@ export interface RenderOptions {
 }
 
 const BLOCK = 4096;
+
+/** Chunks in one pass of the material (1 for a Sequence or an endless source). */
+export function chunksPerLoop(playable: Playable): number {
+  const n = toSource(playable).chunkCount;
+  return n !== undefined && Number.isFinite(n) && n >= 1 ? Math.floor(n) : 1;
+}
 
 export function renderPlayable(playable: Playable, opts: RenderOptions = {}): Float32Array {
   const sampleRate = opts.sampleRate ?? EXPORT_SAMPLE_RATE;
@@ -45,7 +56,7 @@ export function renderPlayable(playable: Playable, opts: RenderOptions = {}): Fl
   scheduler.start(playable, {
     startFrame: 0,
     loop: true,
-    maxChunks: byDuration ? undefined : Math.max(1, Math.floor(opts.loops ?? 1)),
+    maxChunks: byDuration ? undefined : Math.max(1, Math.floor(opts.loops ?? 1)) * chunksPerLoop(playable),
   });
 
   const lookahead = BLOCK + core.releaseLength + 1;

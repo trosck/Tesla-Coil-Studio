@@ -6,6 +6,23 @@
   min-height: 100%;
   margin: 0 auto;
   padding: var(--space-4) var(--space-5) var(--space-3);
+  overflow-x: clip;
+}
+@media (max-width: 720px) {
+  .app {
+    /* room for the fixed transport bar */
+    padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+  }
+  .app-brand__sub {
+    display: none;
+  }
+  .app-status {
+    width: 100%;
+  }
+  .app-status__device {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
 }
 
 /* header */
@@ -126,6 +143,8 @@
 }
 .modes__tabs {
   display: flex;
+  scroll-behavior: smooth;
+  overscroll-behavior-x: contain;
   gap: 2px;
   padding: 3px;
   overflow-x: auto;
@@ -147,6 +166,17 @@
   cursor: pointer;
   white-space: nowrap;
   transition: color var(--dur) var(--ease), background var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+.modes__tab[data-source]:not([aria-selected='true'])::after {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-left: 6px;
+  vertical-align: middle;
+  border-radius: 50%;
+  background: var(--cyan);
+  box-shadow: 0 0 6px var(--cyan);
 }
 .modes__tab:hover {
   color: var(--text);
@@ -179,19 +209,6 @@
   }
 }
 
-/* mode stub */
-.mode-stub__soon {
-  margin: 0 0 var(--space-2);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--purple);
-}
-.mode-stub__plan {
-  color: var(--text-dim);
-}
-
 /* safety */
 .app-safety {
   display: flex;
@@ -206,10 +223,26 @@
 }
 .app-safety p {
   margin: 0;
+  max-width: 120ch;
+}
+@media (max-width: 720px) {
+  .app-safety {
+    flex-direction: column;
+    gap: var(--space-1);
+    padding: var(--space-3);
+    font-size: 11px;
+  }
 }
 .app-safety__badge {
   flex: none;
   font-weight: 700;
   letter-spacing: 0.12em;
   color: var(--warn);
+}
+
+/* phones: modes (presets) first, the visualizer below them (after the 960px rule) */
+@media (max-width: 720px) {
+  .app-side {
+    order: 0;
+  }
 }

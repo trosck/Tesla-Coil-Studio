@@ -16,6 +16,24 @@
 .transport__buttons .ui-btn {
   flex: 1 1 120px;
 }
+.transport__label {
+  white-space: nowrap;
+}
+.transport__note {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin: calc(var(--space-2) * -1) 0 0;
+  font-size: 12px;
+  color: var(--text-faint);
+}
+.transport__note strong {
+  color: var(--cyan);
+  font-weight: 600;
+}
+.transport__warn {
+  color: var(--warn);
+}
 .transport__playing {
   animation: tcs-pulse 1.6s ease-in-out infinite;
 }
@@ -36,8 +54,49 @@
 }
 @media (max-width: 960px) {
   .transport__settings {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--space-3);
+  }
+}
+
+/* Phones: the playback buttons become a fixed bottom bar so they stay reachable. */
+@media (max-width: 720px) {
+  .transport {
+    padding: var(--space-3);
+  }
+  .transport__buttons {
+    position: fixed;
+    z-index: 40;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: var(--space-1);
+    padding: var(--space-2) var(--space-2) calc(var(--space-2) + env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid var(--border-strong);
+    background: rgb(17 20 27 / 0.94);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 -10px 30px rgb(0 0 0 / 0.45);
+  }
+  .transport__buttons .ui-btn {
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    min-height: 54px;
+    padding: var(--space-1) 2px;
+    font-size: 10px;
+    letter-spacing: 0.04em;
+  }
+  .transport__buttons .ui-btn__icon {
+    width: 20px;
+    height: 20px;
+  }
+  .transport__long {
+    display: none;
+  }
+  .transport__note {
+    margin: 0;
   }
 }
 

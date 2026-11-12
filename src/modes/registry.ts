@@ -13,4 +13,5 @@ import { mode as midi } from './midi';
 import { mode as frequency } from './frequency';
 import { mode as presets } from './presets';
 
-export const MODES: readonly AnyModeDefinition[] = [ramp, pulse, siren, random, melody, sequencer, midi, frequency, presets];
+// Presets first: it is the default tab for first-time users (pick a preset, press Play).
+export const MODES: readonly AnyModeDefinition[] = [presets, ramp, pulse, siren, random, melody, sequencer, midi, frequency];

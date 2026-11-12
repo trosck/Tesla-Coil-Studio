@@ -111,8 +111,16 @@ export class Scheduler {
     this.source = toSource(playable);
   }
 
+  /**
+   * Change looping on the fly. Turning loop ON after the end was already
+   * determined (LOOP was off) revives playback: the next chunk opens at the
+   * old end frame. (Export's maxChunks limit still applies.)
+   */
   setLoop(loop: boolean): void {
     this.loop = loop;
+    if (loop && this.endFrame !== null && this.source && (this.maxChunks === undefined || this.chunksPlayed < this.maxChunks)) {
+      this.endFrame = null;
+    }
   }
 
   private hasNextChunk(): boolean {

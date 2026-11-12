@@ -8,49 +8,83 @@ WAV files. No backend, no account: everything runs in your browser.
 
 The coil modulates its arc from the incoming audio. The app only produces
 audio on your device's normal sound output; your operating system sends it to
-the coil over Bluetooth.
+the coil over Bluetooth. The app never controls the coil, its power or the
+Bluetooth connection directly.
 
 ## Quick start
 
 ```bash
-pnpm install
-pnpm dev        # open the printed URL
+pnpm install && pnpm dev     # open the printed URL
 ```
 
-Other scripts: `pnpm build` (production build in `dist/`), `pnpm preview`,
-`pnpm typecheck`, `pnpm lint`, `pnpm test`.
+Build for production:
 
-Requires a current Chromium, Firefox or Safari (Web Audio + AudioWorklet).
+```bash
+pnpm build                   # type-checks, then writes the static site to dist/
+pnpm preview                 # serve dist/ locally
+```
 
-## Setup with an MH-M18 Bluetooth Tesla coil
+Other scripts: `pnpm typecheck`, `pnpm lint`, `pnpm test`.
 
-1. Power the coil as described in its manual. Keep the discharge area clear.
-2. On your computer or phone, open the Bluetooth settings and pair the device
-   (it usually shows up as **MH-M18** or similar; no PIN, or `0000`).
-3. Select it as the **system sound output** (macOS: Control Center → Sound;
-   Windows: Sound output; Android/iOS: it becomes the output automatically).
-4. Open Tesla Coil Studio, click **Enable audio** (browsers need one click
-   before they play sound), go to the **Frequency** tab and press **PLAY** for
-   a test tone. Start with a low master volume and raise it slowly.
-5. Square wave (the default) gives the loudest, clearest arcs. The duty cycle
-   slider changes the tone and arc intensity.
+The app opens on the **Presets** tab: pick a preset, press **▶ Play**.
 
-In Chromium-based browsers an output-device selector appears next to the
-status indicator, so you can pick the coil without changing the system
-default.
+## Setup guide (summary)
+
+The full guide is built in: click **Setup guide** in the header (it opens
+automatically on your first visit).
+
+1. **Pair** your computer or phone with the MH-M18 receiver in the system
+   Bluetooth settings (it usually shows up as "MH-M18"; PIN `0000` if asked).
+2. **Select it as the audio output** (macOS: Control Center → Sound; Windows:
+   Sound output; phones switch automatically). In Chrome/Edge you can also pick
+   it with the output selector in the header once audio is enabled.
+3. Set the coil's switch to **Music mode**.
+4. Set the **system volume moderately** (≈50%) and raise it slowly.
+5. **Pick a preset** — *Test Signal* (steady 440 Hz) is ideal for a first check.
+6. Press **Play** (or Space). The first click/tap also unlocks browser audio
+   ("Enable audio" in the header does the same).
+
+Tips: the square wave gives the clearest arcs; avoid very high volume
+(clipping/distortion); Bluetooth adds about 100–300 ms of latency, so the
+visuals may lead the sound; on phones keep the screen on and the tab in the
+foreground; use **EXPORT WAV** to play tracks from any music player.
 
 ## Features
 
-- Transport: play, pause/resume, stop, loop, record the output to WAV, export
-  WAV (44.1 kHz / 16-bit, mono or stereo, by loops or duration, adjustable volume).
+- **Preset library** (Presets tab): 10 built-in presets — Frequency Ramp, Fast
+  Pulse, Slow Pulse, Rising / Falling / Alternating Siren, Electronic Rhythm,
+  Random Lightning, Arpeggio, Test Signal — grouped and filterable by mode,
+  searchable. One-click **Play** (audition without leaving the tab) or **Edit**
+  (opens the preset in its mode; built-ins are never modified). Save the
+  current settings of any mode as your own preset, rename, duplicate, delete,
+  and export/import your presets as a JSON file (validated on import).
+- **Modes**: Ramp, Pulse, Siren, Random (seeded, scale-quantized), Melody
+  (piano keyboard + computer keys, recording, timeline editor), Step
+  Sequencer (4 pattern slots, chaining, swing), MIDI import (monophonic
+  reduction, piano roll), Frequency (steady tone, sweep, step list, converter).
+- **Transport**: play, pause/resume, stop, loop, record the output to WAV,
+  export WAV (44.1 kHz / 16-bit PCM, mono or stereo, by loops or duration,
+  adjustable volume). Space = play/pause. On phones the playback buttons stay
+  in a fixed bar at the bottom of the screen.
 - Global waveform (square / sine / triangle / saw) and duty cycle.
 - Live oscilloscope, spectrum, big frequency readout with note and cents,
-  amplitude meter, BPM and position.
-- Modes: Ramp, Pulse, Siren, Random, Melody, Sequencer, MIDI, Frequency,
-  Presets. (Frequency and a basic preset list work now; the others are being built.)
+  amplitude meter, BPM, loop counter and position.
+- Output never clips: a fixed master ceiling keeps the signal below full scale.
 
-Developers: see [ARCHITECTURE.md](./ARCHITECTURE.md) for the engine design and
-how to add a mode.
+Developers: see [ARCHITECTURE.md](./ARCHITECTURE.md) for the engine design,
+presets, the mode-switching rule and how to add a mode.
+
+## Browser support
+
+Needs Web Audio with AudioWorklet: current **Chrome**, **Edge**, **Safari**
+(macOS / iOS) and **Firefox**, desktop and mobile.
+
+- **Output device selection** inside the app needs `AudioContext.setSinkId`,
+  which only Chromium browsers (Chrome, Edge, Opera…) support. Elsewhere,
+  choose the receiver as the system audio output.
+- Browsers require one click/tap before they play sound.
+- Mobile browsers may suspend audio when the screen locks or the tab goes to
+  the background.
 
 ## Safety
 

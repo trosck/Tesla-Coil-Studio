@@ -271,6 +271,7 @@ export class AudioEngine {
     await this.ensureStarted();
     const loop = opts.loop ?? this.state.loop;
     this.haltScheduling();
+    this.pausedAt = null;
     this.playable = playable;
     this.startScheduler(this.nowFrame() + secondsToFrames(LEAD_S, this.ctx!.sampleRate), { loop });
     this.store.setState({ isPlaying: true, isPaused: false, loop, label: playable.label ?? null, bpm: playable.bpm ?? null });
@@ -320,8 +321,13 @@ export class AudioEngine {
   }
 
   setLoop(loop: boolean): void {
-    this.scheduler?.setLoop(loop);
+    const sched = this.scheduler;
+    const wasEnding = sched?.endFrame != null;
+    sched?.setLoop(loop);
+    // LOOP switched back on before the last chunk finished: keep going.
+    if (wasEnding && sched?.endFrame === null) this.finishSent = false;
     this.store.setState({ loop });
+    this.tick();
   }
 
   /**

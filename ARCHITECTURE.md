@@ -47,18 +47,20 @@ src/
     params.ts             params normalization + localStorage persistence
     settings.ts           persists volume / waveform / duty / loop
   presets/
-    types.ts  storage.ts  builtIn.ts
+    types.ts              Preset
+    builtIn.ts            BUILT_IN_PRESETS (10, typed with each mode's params), FEATURED_PRESET_IDS
+    storage.ts            user presets in localStorage (observable)
+    io.ts                 JSON export / import validation
   modes/
-    registry.ts           tab order (imports `mode` from each folder)
-    <id>/index.tsx        one folder per mode: ramp pulse siren random melody
-                          sequencer midi frequency presets
+    registry.ts           tab order (imports `mode` from each folder; Presets first)
+    <id>/index.tsx        one folder per mode: presets ramp pulse siren random
+                          melody sequencer midi frequency
   components/
     ui/                   primitives: Button, Slider, NumberField/NumberInput, Select,
                           Toggle, SegmentedControl, Panel, Field, Icon (+ ui.css)
-    shell/                Header, ModeTabs, SafetyNotice
-    transport/            TransportBar, ExportDialog
+    shell/                Header, ModeTabs, SafetyNotice (SAFETY_TEXT), SetupGuide + guideStore
+    transport/            TransportBar (Space shortcut, mobile bottom bar), ExportDialog
     visualizer/           Oscilloscope, Spectrum, Readouts, canvasLoop
-    ModeStub.tsx          "Coming soon" placeholder
   lib/                    store.ts (observable), useStore.ts, persist.ts
   styles/                 tokens.css (CSS variables), global.css
 ```
@@ -142,7 +144,8 @@ mid-event), `endFrame` (exclusive, `Infinity` for held live notes), `index`,
 Pure and deterministic. `start(playable, {startFrame, loop, offsetSeconds?, chunkIndex?, maxChunks?})`,
 `advance(untilFrame): CoreEvent[]` (everything with activation < untilFrame not
 yet emitted, opening chunks as needed), `setPlayable(p)` (takes effect at the
-next unopened chunk = next loop boundary), `setLoop(b)`, `positionAt(frame)`,
+next unopened chunk = next loop boundary), `setLoop(b)` (turning loop back on
+before the end was reached revives playback), `positionAt(frame)`,
 `endFrame` (set once the last chunk is known). Frames: `round(seconds · sr)`;
 chunk *k+1* starts at `chunkStart_k + round(length_k · sr)`.
 `clipEvents(events, cutFrame)` cuts events at a frame.
@@ -197,7 +200,9 @@ awake and `noteOn` works while paused.
 ## 5. Export (`src/audio/export/`)
 
 `renderPlayable(p, { loops? | durationSeconds?, volume, waveform, duty, sampleRate=44100 })`
-→ `Float32Array`; `renderWav(p, {..., stereo})` → WAV `ArrayBuffer` (44.1 kHz,
+→ `Float32Array`. One "loop" = one pass of the material: a `Sequence`, or all
+`chunkCount` chunks of a finite source (a sequencer chain A→B); for endless
+sources (`chunkCount: Infinity`) one loop = one chunk (`chunksPerLoop(p)`). `renderWav(p, {..., stereo})` → WAV `ArrayBuffer` (44.1 kHz,
 16-bit PCM, mono or duplicated stereo). Max 600 s. `encodeWav(channels, {sampleRate})`
 / `encodeMonoWav(samples, sr, stereo)` / `floatTo16`. `downloadBlob(data, name)`,
 `timestampedName(prefix)`. The export dialog passes the transport's current
@@ -271,21 +276,68 @@ export const mode = defineMode<RampParams>({
    with `renderPlayable` and counts zero crossings).
 
 Selecting a tab makes it the **source mode** (unless `providesPlayable: false`,
-used by Presets), so the transport plays the visible mode.
+used by Presets), so the transport plays the visible mode. The source mode is
+persisted (`tcs.sourceMode.v1`) next to the active tab (`tcs.activeMode.v1`).
+First visit: the Presets tab is shown and the source mode is Frequency (a
+440 Hz test tone), see `defaultModeId` / `defaultSourceModeId` in `main.tsx`.
+
+### Switching modes while playing (the rule)
+
+Implemented in `StudioProvider` (one effect that syncs the transport):
+
+| What happens | Transport playing | Transport paused |
+| --- | --- | --- |
+| Params of the source mode change | handed over at the next loop/chunk boundary (`liveUpdate: 'boundary'`) or re-cued at the same position (`'immediate'`) | new material is resumed at the paused position |
+| Another mode tab is selected (source mode changes) | **restarts immediately** with the new mode from its beginning; stops if the new mode has nothing to play (e.g. MIDI without a file) | **stops** (rewinds), so PLAY starts the new mode from the beginning |
+| A preset is loaded (`loadPreset`) | restarts immediately with the preset | stops |
+| `loadPreset(p, { play: true })` ("Play" on a card) | always starts the preset from the beginning | ← same |
+| The Presets tab is opened | nothing changes (it provides no material) | nothing changes |
+
+Rationale: a boundary hand-over is right for tweaking a running sound, but a
+mode switch is a deliberate "play something else" — waiting for the old
+material's boundary (which can be minutes for a long siren pass) or
+continuing to play a mode that is no longer visible would be confusing.
 
 ### Presets
 
 `Preset<P> = { id, name, mode: ModeId, params: P, builtIn?, description?, createdAt? }`.
 
-- Built-ins: `src/presets/builtIn.ts` (`BUILT_IN_PRESETS`, ids `builtin-*`).
+- Built-ins: `src/presets/builtIn.ts` (`BUILT_IN_PRESETS`, ids `builtin-*`,
+  stable — never rename). Each carries the mode's COMPLETE params, typed with
+  the mode's params interface (`RampParams`, …), so it passes the mode's
+  `normalizeParams` unchanged; `builtIn.test.ts` checks that, that each one
+  builds a playable with frequencies in 60–1600 Hz, and that it renders
+  audibly below the ceiling. `FEATURED_PRESET_IDS` = the "Quick start" row.
 - User presets: `src/presets/storage.ts` — `getUserPresets()`, `subscribePresets(cb)`
-  (use with `useSyncExternalStore`), `saveUserPreset({ name, mode, params, id? })`,
+  (use with `useSyncExternalStore`), `saveUserPreset({ name, mode, params, description?, id? })`,
+  `updateUserPreset(id, { name?, description? })` (rename, keeps order),
+  `duplicatePreset(preset)`, `addUserPresets(list)` (import, fresh ids),
   `deleteUserPreset(id)`, `getPreset(id)`, `getAllPresets(mode?)`, `createPresetId()`.
   localStorage key `tcs.presets.v1`.
-- Loading: `useStudio().loadPreset(preset)` normalizes `preset.params` through
-  the target mode's `normalizeParams`, stores them as that mode's params and
-  switches to its tab. The mode simply receives the new `params` prop — no
-  extra code in the mode. Saving: `saveUserPreset({ mode: sourceModeId, params: getParams(sourceModeId), name })`.
+- Files: `src/presets/io.ts` — `serializePresets(list)` →
+  `{ format: 'tesla-coil-studio-presets', version: 1, exportedAt, presets: [{ name, mode, params, description?, createdAt? }] }`;
+  `parsePresetFile(text, normalize)` validates (format/version, mode ids, names,
+  params passed through the target mode's `normalizeParams`; a bare array is
+  accepted), returns `{ presets, invalid }` or throws a readable Error;
+  `presetKey()` is used to skip duplicates on import.
+- Loading: `useStudio().loadPreset(preset, { play?, open? })` normalizes a
+  deep copy of `preset.params` through the target mode's `normalizeParams`
+  (built-ins are never mutated), stores them as that mode's params and switches
+  to its tab (`open: false`: stays on the current tab and only makes it the
+  source mode — used by the Presets tab's "Play"). `play: true` starts it
+  (call from a click handler: it resumes the AudioContext inside the gesture).
+  `useStudio().loadedPreset` = `{ id, mode, name }` of the last loaded preset.
+  The mode simply receives the new `params` prop — no extra code in the mode.
+  Saving: `saveUserPreset({ mode: sourceModeId, params: getParams(sourceModeId), name })`.
+
+### Setup guide
+
+`src/components/shell/SetupGuide.tsx`: modal `<dialog>` with the six setup
+steps, tips and `SAFETY_TEXT`; "Play test signal" loads `builtin-test-signal`
+with `play: true`. Open state lives in `guideStore.ts` (`openGuide()`,
+`closeGuide()`); it opens automatically until dismissed once
+(`tcs.guideSeen.v1`). The header "Setup guide" button and the Presets tab link
+call `openGuide()`.
 
 ## 8. UI and styling conventions
 
@@ -295,8 +347,20 @@ used by Presets), so the transport plays the visible mode.
   `visualizer/visualizer.css`, `App.css`). Prefixes: `.ui-*` primitives,
   `.app-*` shell, `.viz-*` visualizer, `.mode-<id>*` modes. No CSS modules.
 - Accessibility: labeled controls (`Field`/`useId`), `role="switch"` toggles,
-  `radiogroup` segmented controls with arrow keys, tablist for modes, Space =
-  play/pause when no control is focused.
+  `radiogroup` segmented controls with arrow keys, tablist for modes.
+- **Space = play/pause** (TransportBar), except while typing (text inputs,
+  textarea, select, contenteditable), on controls that Space activates
+  (buttons, radios, switches, checkboxes, piano keys…) and while a modal dialog
+  is open. It does work on the mode tabs and on elements marked
+  `data-space="transport"` (PLAY / PAUSE). The melody keyboard uses letter
+  keys only, so there is no conflict.
+- Layout: two columns ≥ 961 px; single column below; ≤ 720 px the playback
+  buttons become a fixed bottom bar (`.transport__buttons`), the visualizer
+  moves below the modes, and `.app` reserves bottom padding. Grids use
+  `minmax(min(100%, Npx), 1fr)` so nothing forces horizontal scroll at 360 px;
+  wide content (sequencer grid, melody timeline) scrolls inside its own container.
+- The safety notice (`SafetyNotice`, exact `SAFETY_TEXT`) is always rendered at
+  the bottom; the transport shows a one-line "audio signal only" warning.
 - Visualizers use `startCanvasLoop` (rAF, devicePixelRatio, ResizeObserver,
   skips work when hidden/off-screen).
 
