@@ -104,7 +104,7 @@ function PulsePanel({ params, setParams }: ModePanelProps<PulseParams>) {
       <Panel
         title="Rhythm"
         actions={
-          <span className="mode-pulse__readout">
+          <span className="mode-pulse__readout lcd-chip">
             {Math.round(p.bpm)} BPM · {(timing.step * 1000).toFixed(0)} ms/step
           </span>
         }

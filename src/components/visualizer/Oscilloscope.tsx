@@ -4,37 +4,38 @@ import { cssVar, startCanvasLoop } from './canvasLoop';
 
 const WINDOW = 1024; // samples shown (~21 ms at 48 kHz)
 
-/** Time-domain scope with rising zero-crossing trigger for a stable picture. */
+/** Time-domain scope with rising zero-crossing trigger, drawn in LCD ink. */
 export function Oscilloscope({ engine }: { engine: AudioEngine }) {
   const ref = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
     const canvas = ref.current;
     if (!canvas) return;
-    const cyan = cssVar('--cyan', '#22e5ff');
-    const grid = cssVar('--border', '#2a3142');
+    const ink = cssVar('--lcd-ink', '#14220a');
+    const dim = cssVar('--lcd-ink-dim', 'rgb(20 34 10 / 0.35)');
+    const faint = cssVar('--lcd-ink-faint', 'rgb(20 34 10 / 0.15)');
     let data: Float32Array<ArrayBuffer> | null = null;
     return startCanvasLoop(canvas, (ctx, w, h) => {
       ctx.clearRect(0, 0, w, h);
-      // grid
-      ctx.strokeStyle = grid;
+      const mid = Math.round(h / 2) + 0.5;
+      // grid: quarter verticals + dashed centre line
       ctx.lineWidth = 1;
-      ctx.globalAlpha = 0.6;
+      ctx.strokeStyle = faint;
       ctx.beginPath();
-      for (let i = 1; i < 8; i++) {
-        const x = Math.round((w * i) / 8) + 0.5;
+      for (let i = 1; i < 4; i++) {
+        const x = Math.round((w * i) / 4) + 0.5;
         ctx.moveTo(x, 0);
         ctx.lineTo(x, h);
       }
-      for (let i = 1; i < 4; i++) {
-        const y = Math.round((h * i) / 4) + 0.5;
-        ctx.moveTo(0, y);
-        ctx.lineTo(w, y);
-      }
       ctx.stroke();
-      ctx.globalAlpha = 1;
+      ctx.strokeStyle = dim;
+      ctx.setLineDash([2, 3]);
+      ctx.beginPath();
+      ctx.moveTo(0, mid);
+      ctx.lineTo(w, mid);
+      ctx.stroke();
+      ctx.setLineDash([]);
 
       const an = engine.analyser;
-      const mid = h / 2;
       let start = 0;
       let count = WINDOW;
       if (an) {
@@ -49,12 +50,11 @@ export function Oscilloscope({ engine }: { engine: AudioEngine }) {
           }
         }
       }
-      ctx.strokeStyle = cyan;
-      ctx.lineWidth = 2;
-      ctx.shadowColor = cyan;
-      ctx.shadowBlur = 8;
+      ctx.strokeStyle = ink;
+      ctx.lineWidth = 2.5;
+      ctx.lineJoin = 'round';
       ctx.beginPath();
-      const amp = (h / 2) * 0.9;
+      const amp = (h / 2) * 0.85;
       for (let i = 0; i < count; i++) {
         const x = (i / (count - 1)) * w;
         const s = data ? data[start + i]! : 0;
@@ -63,8 +63,7 @@ export function Oscilloscope({ engine }: { engine: AudioEngine }) {
         else ctx.lineTo(x, y);
       }
       ctx.stroke();
-      ctx.shadowBlur = 0;
     });
   }, [engine]);
-  return <canvas ref={ref} className="viz-canvas" role="img" aria-label="Oscilloscope: output waveform" />;
+  return <canvas ref={ref} className="lcd-canvas" role="img" aria-label="Oscilloscope: output waveform" />;
 }

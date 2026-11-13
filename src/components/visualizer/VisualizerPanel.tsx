@@ -1,25 +1,36 @@
 import { useStudio } from '../../studio/StudioContext';
-import { Panel } from '../ui';
 import { Oscilloscope } from './Oscilloscope';
-import { AmplitudeMeter, FrequencyReadout, TransportReadout } from './Readouts';
+import { AmplitudeMeter, FrequencyReadout, LcdHeadline, TransportReadout } from './Readouts';
 import { Spectrum } from './Spectrum';
 import './visualizer.css';
 
-export function VisualizerPanel() {
+/** The player deck's LCD: live readouts + scope + spectrum, all in LCD ink. */
+export function VisualizerPanel({ mode, name }: { mode: string; name: string }) {
   const { engine } = useStudio();
   return (
-    <Panel title="Live output" className="viz">
+    <section className="lcd deck-lcd" aria-label="Live output">
+      <LcdHeadline mode={mode} name={name} />
       <FrequencyReadout />
       <AmplitudeMeter />
-      <div className="viz-screen">
-        <span className="viz-screen__tag">SCOPE</span>
-        <Oscilloscope engine={engine} />
-      </div>
-      <div className="viz-screen viz-screen--spectrum">
-        <span className="viz-screen__tag">SPECTRUM</span>
-        <Spectrum engine={engine} />
+      <div className="lcd-screens">
+        <div className="lcd-screen lcd-screen--scope">
+          <span className="lcd-screen__tag" aria-hidden="true">
+            SCOPE
+          </span>
+          <div className="lcd-screen__frame">
+            <Oscilloscope engine={engine} />
+          </div>
+        </div>
+        <div className="lcd-screen lcd-screen--spectrum">
+          <span className="lcd-screen__tag" aria-hidden="true">
+            SPECTRUM
+          </span>
+          <div className="lcd-screen__frame">
+            <Spectrum engine={engine} />
+          </div>
+        </div>
       </div>
       <TransportReadout />
-    </Panel>
+    </section>
   );
 }

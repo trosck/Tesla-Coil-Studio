@@ -76,7 +76,7 @@ export function Converter({ frequency, onApply }: { frequency: number; onApply: 
             <Select label="Octave" value={octave} options={OCTAVE_OPTIONS} onChange={setOctave} />
           </div>
           <div className="mode-frequency__conv-result">
-            <span className="mode-frequency__conv-result-hz">{formatHz(noteHz)} Hz</span>
+            <span className="mode-frequency__conv-result-hz lcd-chip">{formatHz(noteHz)} Hz</span>
             <span className="mode-frequency__tip">MIDI {midi} · A4 = 440 Hz</span>
           </div>
           <div className="mode-frequency__conv-actions">

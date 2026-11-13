@@ -2,33 +2,35 @@ import { useEffect, useRef } from 'react';
 import type { AudioEngine } from '../../audio/engine';
 import { cssVar, startCanvasLoop } from './canvasLoop';
 
-const F_MIN = 20;
-const F_MAX = 20000;
-const LABELS = [50, 100, 200, 500, 1000, 2000, 5000, 10000];
+const F_MIN = 40;
+const F_MAX = 12000;
+const LABELS: [number, string][] = [
+  [100, '100'],
+  [1000, '1k'],
+  [10000, '10k'],
+];
+const SEG = 3; // LCD segment height (px)
+const GAP = 2; // gap between segments (px)
 
-/** Log-frequency spectrum bars from the AnalyserNode. */
+/** Log-frequency spectrum as segmented LCD bars from the AnalyserNode. */
 export function Spectrum({ engine }: { engine: AudioEngine }) {
   const ref = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
     const canvas = ref.current;
     if (!canvas) return;
-    const cyan = cssVar('--cyan', '#22e5ff');
-    const blue = cssVar('--blue', '#3d7bff');
-    const purple = cssVar('--purple', '#a259ff');
-    const faint = cssVar('--text-faint', '#66728a');
+    const ink = cssVar('--lcd-ink', '#14220a');
+    const faint = cssVar('--lcd-ink-faint', 'rgb(20 34 10 / 0.15)');
+    const font = cssVar('--font-lcd', 'monospace');
     let data: Uint8Array<ArrayBuffer> | null = null;
     return startCanvasLoop(canvas, (ctx, w, h) => {
       ctx.clearRect(0, 0, w, h);
       const an = engine.analyser;
-      const labelH = 14;
-      const plotH = h - labelH;
-      const bars = Math.max(24, Math.min(160, Math.floor(w / 5)));
+      const labelH = 15;
+      const plotH = h - labelH - 3;
+      const bars = Math.max(16, Math.min(48, Math.floor(w / 7)));
       const bw = w / bars;
-      const grad = ctx.createLinearGradient(0, plotH, 0, 0);
-      grad.addColorStop(0, blue);
-      grad.addColorStop(0.55, cyan);
-      grad.addColorStop(1, purple);
-      ctx.fillStyle = grad;
+      const segs = Math.max(1, Math.floor((plotH + GAP) / (SEG + GAP)));
+      const levels = new Array<number>(bars).fill(0);
       if (an) {
         if (!data || data.length !== an.frequencyBinCount) data = new Uint8Array(an.frequencyBinCount);
         an.getByteFrequencyData(data);
@@ -41,18 +43,29 @@ export function Spectrum({ engine }: { engine: AudioEngine }) {
           const i1 = Math.min(data.length - 1, Math.max(i0, Math.ceil(f1 / binHz)));
           let m = 0;
           for (let i = i0; i <= i1; i++) m = Math.max(m, data[i]!);
-          const bh = (m / 255) * plotH;
-          if (bh > 0.5) ctx.fillRect(b * bw + 1, plotH - bh, Math.max(1, bw - 2), bh);
+          levels[b] = m / 255;
         }
       }
-      ctx.fillStyle = faint;
-      ctx.font = '10px ui-monospace, Menlo, monospace';
+      for (let b = 0; b < bars; b++) {
+        const lit = Math.round(levels[b]! * segs);
+        const x = b * bw + 1;
+        const bwi = Math.max(1, bw - 2);
+        for (let s = 0; s < segs; s++) {
+          ctx.fillStyle = s < lit ? ink : faint;
+          // unlit segments: only the lowest one, as a faint baseline
+          if (s >= lit && s > 0) break;
+          ctx.fillRect(x, plotH - (s + 1) * (SEG + GAP) + GAP, bwi, SEG);
+        }
+      }
+      ctx.fillStyle = ink;
+      ctx.font = `14px ${font}`;
       ctx.textAlign = 'center';
-      for (const f of LABELS) {
+      ctx.textBaseline = 'alphabetic';
+      for (const [f, text] of LABELS) {
         const x = (Math.log(f / F_MIN) / Math.log(F_MAX / F_MIN)) * w;
-        ctx.fillText(f >= 1000 ? `${f / 1000}k` : String(f), x, h - 3);
+        ctx.fillText(text, x, h - 2);
       }
     });
   }, [engine]);
-  return <canvas ref={ref} className="viz-canvas" role="img" aria-label="Frequency spectrum" />;
+  return <canvas ref={ref} className="lcd-canvas" role="img" aria-label="Frequency spectrum" />;
 }

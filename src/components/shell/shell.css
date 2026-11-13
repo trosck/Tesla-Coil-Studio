@@ -1,58 +1,461 @@
-/* Setup guide dialog */
-.guide {
-  width: min(640px, calc(100vw - 24px));
-  max-height: min(88vh, 900px);
-  padding: 0;
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-lg);
-  background: var(--surface);
-  color: var(--text);
-  box-shadow: 0 30px 80px rgb(0 0 0 / 0.6), var(--accent-glow);
+/* Shell: brand band, status pill, task pane, menu bar, XP dialogs, shell artwork.
+   Base looks (.win .titlebar .gel .orb .tp-* …) come from styles/y2k.css. */
+
+/* ---------- artwork ---------- */
+.px-icon {
+  flex: none;
+  shape-rendering: crispEdges;
 }
-.guide[open] {
+.px-white { fill: var(--surface); }
+.px-light { fill: color-mix(in srgb, var(--chrome-border) 35%, var(--surface)); }
+.px-mid { fill: color-mix(in srgb, var(--chrome-border) 75%, var(--surface)); }
+.px-dark { fill: var(--slider-track-border); }
+.px-screen { fill: var(--text); }
+.px-glow { fill: var(--mode-frequency-1); }
+.px-led { fill: var(--ok); }
+.px-blue { fill: var(--blue); }
+.px-navy { fill: var(--link); }
+.px-pale { fill: var(--tp-body); }
+.px-folder { fill: var(--mode-presets-1); }
+.px-folder-tab { fill: var(--mode-presets-2); }
+.px-folder-hi { fill: color-mix(in srgb, var(--mode-presets-1) 50%, var(--surface)); }
+.px-arrow {
+  fill: none;
+  stroke-width: 2;
+}
+.px-arrow--up { stroke: var(--ok); }
+.px-arrow--down { stroke: var(--link); }
+
+.bolt-icon {
+  flex: none;
+  fill: var(--mode-presets-1);
+  stroke: var(--mode-presets-2);
+  stroke-width: 1;
+}
+.bolt-icon--orb,
+.bolt-icon--start {
+  fill: color-mix(in srgb, var(--mode-presets-1) 45%, var(--surface));
+  stroke: var(--win-border);
+}
+.bolt-icon--start {
+  stroke: var(--ok);
+}
+.orb-glyph {
+  fill: none;
+  stroke: var(--gel-text);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.warn-icon {
+  flex: none;
+}
+.warn-icon__body {
+  fill: var(--mode-presets-1);
+  stroke: var(--mode-presets-2);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+.warn-icon__mark {
+  fill: none;
+  stroke: var(--text);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+.info-icon {
+  flex: none;
+}
+.info-icon circle {
+  fill: var(--blue);
+}
+.info-icon path {
+  fill: none;
+  stroke: var(--surface);
+  stroke-width: 2.6;
+  stroke-linecap: round;
+}
+.close-glyph {
+  fill: none;
+  stroke: var(--titlebar-text);
+  stroke-width: 2;
+}
+.caption-btns {
+  display: flex;
+  flex: none;
+  gap: 3px;
+}
+.caption-btns__min {
+  width: 8px;
+  height: 2px;
+  margin-top: 8px;
+  background: var(--titlebar-text);
+}
+.caption-btns__max {
+  width: 9px;
+  height: 8px;
+  border: 2px solid var(--titlebar-text);
+  border-top-width: 3px;
+}
+
+/* ---------- menu bar ---------- */
+.menubar {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 2px 4px;
+}
+.menubar__item {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 3px 9px;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  background: transparent;
+  color: var(--text);
+  font-size: 13px;
+}
+button.menubar__item {
+  cursor: pointer;
+}
+button.menubar__item:hover {
+  background: var(--select-bg);
+  color: var(--select-text);
+}
+.menubar__item--inert {
+  cursor: default;
+  user-select: none;
+}
+.menubar__item--end {
+  margin-left: auto;
+}
+
+/* ---------- aero brand band ---------- */
+.brand {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--tp-item-hover-border);
+}
+.orb.brand__orb {
+  width: 58px;
+  height: 58px;
+  background: radial-gradient(circle at 34% 26%, var(--surface) 0 12%, var(--mode-frequency-1) 32%, var(--blue) 72%, var(--win-border));
+}
+.brand__text {
   display: flex;
   flex-direction: column;
-  animation: tcs-dialog-in 220ms var(--ease);
+  gap: 6px;
+  min-width: 0;
 }
-.guide::backdrop {
-  background: rgb(5 6 10 / 0.72);
-  backdrop-filter: blur(3px);
+.brand__name {
+  margin: 0;
+  font-size: clamp(22px, 3.4vw, 38px);
+  font-weight: normal;
+  letter-spacing: 0.04em;
+  line-height: 1.1;
 }
-.guide__head,
-.guide__foot {
+.brand__tagline {
+  margin: 0;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  color: var(--tp-head-text);
+}
+.brand__burst {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 96px;
+  height: 96px;
+  transform: rotate(-12deg);
+}
+.brand__burst span {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: bold;
+  line-height: 1.15;
+  text-align: center;
+  color: var(--lcd-ink);
+}
+.brand__status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  min-width: 0;
+  max-width: 100%;
+  margin-left: auto;
+}
+.brand__device {
+  max-width: 260px;
+}
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  min-width: 0;
+  padding: 4px 6px 4px 12px;
+  border-radius: var(--radius-pill);
+  font-size: 13px;
+  font-weight: bold;
+  box-shadow: inset 0 1px 0 var(--surface);
+}
+.status-pill__live {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.status-pill__sr {
+  font-weight: normal;
+  color: var(--text-dim);
+}
+.status-led {
+  --led: var(--text-faint);
+  flex: none;
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, var(--surface) 0 12%, var(--led) 60%, color-mix(in srgb, var(--led) 70%, var(--text)));
+  transition: box-shadow var(--dur) var(--ease);
+}
+.status-led--running {
+  --led: var(--ok);
+  box-shadow: 0 0 6px var(--ok);
+}
+.status-led--starting,
+.status-led--suspended,
+.status-led--interrupted {
+  --led: var(--warn);
+}
+.status-led--error,
+.status-led--unsupported,
+.status-led--closed {
+  --led: var(--danger);
+}
+@media (max-width: 760px) {
+  .brand {
+    gap: 10px 12px;
+    padding: 12px;
+  }
+  .orb.brand__orb {
+    width: 44px;
+    height: 44px;
+  }
+  .brand__text {
+    flex: 1 1 0;
+  }
+  .brand__tagline {
+    font-size: 12px;
+    letter-spacing: 0.02em;
+  }
+  .brand__burst {
+    width: 64px;
+    height: 64px;
+  }
+  .brand__burst span {
+    font-size: 8px;
+  }
+  .brand__status {
+    flex: 1 1 100%;
+    justify-content: flex-start;
+    margin-left: 0;
+  }
+  .brand__device {
+    flex: 1 1 100%;
+    max-width: none;
+  }
+}
+
+/* ---------- task pane ---------- */
+.shell-pane {
+  display: flex;
+  flex: 1 1 250px;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 100%;
+  padding: 14px 12px;
+}
+.tp-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.mode-btn {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2);
-  padding: var(--space-3) var(--space-4);
+  gap: 10px;
+  width: 100%;
+  min-height: 36px;
+  padding: 4px 8px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text);
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
 }
-.guide__head {
-  border-bottom: 1px solid var(--border);
+.mode-btn:hover:not(:disabled) {
+  border-color: var(--tp-item-hover-border);
+  background: var(--surface);
 }
-.guide__head h2 {
-  margin: 0;
-  font-size: 18px;
-  letter-spacing: 0.02em;
+.mode-btn:hover:not(:disabled) .mode-btn__label {
+  text-decoration: underline;
 }
-.guide__kicker {
-  margin: 0;
+.mode-btn[aria-selected='true'] {
+  border-color: var(--select-bg);
+  background: var(--surface);
+  font-weight: bold;
+}
+.mode-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.mode-btn__label {
+  flex: 1;
+  min-width: 0;
+}
+.mode-btn__src {
+  color: var(--ok);
+  font-size: 10px;
+}
+.mode-btn__count {
   font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--cyan);
+  font-weight: normal;
+  color: var(--text-dim);
 }
-.guide__foot {
-  justify-content: flex-end;
-  border-top: 1px solid var(--border);
-}
-.guide__body {
+.tp-details {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
-  padding: var(--space-4);
+  gap: 6px;
+  padding: 10px 12px;
+  font-size: 12px;
+  line-height: 1.45;
+}
+.tp-details__name {
+  font-size: 13px;
+}
+.tp-details__meta {
+  color: var(--text-dim);
+}
+.tp-details__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+@media (max-width: 760px) {
+  .shell-pane {
+    gap: 10px;
+    padding: 10px 8px;
+  }
+  /* two columns of modes on phones keep the pane short */
+  .tp-list[role='tablist'] {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+}
+
+/* ---------- XP dialogs (Setup guide, Export WAV, Save preset) ---------- */
+.win.xp-dialog {
+  width: min(480px, calc(100vw - 24px));
+  max-width: none;
+  max-height: min(88vh, 900px);
+  padding: 0;
+  border-radius: 8px 8px 4px 4px;
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 13px;
+}
+.xp-dialog[open] {
+  display: flex;
+  flex-direction: column;
+  animation: xp-dialog-in 180ms var(--ease);
+}
+.xp-dialog::backdrop {
+  background: color-mix(in srgb, var(--win-border) 35%, transparent);
+}
+.xp-dialog > form {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.titlebar.xp-dialog__title {
+  flex: none;
+  padding: 5px 6px 5px 10px;
+  font-size: 13px;
+}
+.xp-dialog__title-text {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  font-size: 13px;
+  font-weight: bold;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.xp-dialog__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: 16px 18px;
   overflow-y: auto;
   overscroll-behavior: contain;
+}
+.xp-dialog__foot {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  padding: 10px 18px 14px;
+  border-top: 1px solid var(--menu-border);
+}
+.xp-dialog__intro {
+  margin: 0;
+}
+.xp-dialog__optional {
+  font-weight: normal;
+  color: var(--text-faint);
+}
+.ui-input.xp-dialog__textarea {
+  height: auto;
+  padding: 4px var(--space-2);
+  resize: vertical;
+}
+@keyframes xp-dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Setup guide body */
+.win.guide {
+  width: min(640px, calc(100vw - 24px));
+}
+.xp-dialog__body.guide__body {
+  gap: var(--space-4);
+}
+.guide__heading {
+  margin: 0;
+  font-size: 18px;
+  color: var(--tp-head-text);
 }
 .guide__intro {
   margin: 0;
@@ -68,14 +471,14 @@
 }
 .guide__step {
   display: flex;
-  gap: var(--space-3);
   align-items: flex-start;
+  gap: var(--space-3);
 }
 .guide__step h3,
 .guide__tips h3,
 .guide__safety h3 {
   margin: 0 0 2px;
-  font-size: 14px;
+  font-size: 13px;
 }
 .guide__step p {
   margin: 0;
@@ -85,19 +488,24 @@
   display: grid;
   flex: none;
   place-items: center;
-  width: 28px;
-  height: 28px;
-  border: 1px solid rgb(34 229 255 / 0.5);
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--gel-border);
   border-radius: 50%;
-  color: var(--cyan);
-  font-weight: 700;
-  background: rgb(34 229 255 / 0.08);
+  background: var(--gel-blue);
+  color: var(--gel-text);
+  font-family: var(--font-ui);
+  font-weight: bold;
+  box-shadow: var(--gel-shadow);
 }
 .guide__tips {
   padding: var(--space-3) var(--space-4);
-  border: 1px solid rgb(162 89 255 / 0.3);
+  border: 1px solid var(--tp-item-hover-border);
   border-radius: var(--radius);
-  background: rgb(162 89 255 / 0.05);
+  background: var(--surface);
+}
+.guide__tips h3 {
+  color: var(--tp-head-text);
 }
 .guide__tips ul {
   display: flex;
@@ -108,26 +516,15 @@
   color: var(--text-dim);
 }
 .guide__safety {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
   padding: var(--space-3) var(--space-4);
-  border: 1px solid rgb(255 194 74 / 0.35);
-  border-radius: var(--radius);
-  background: rgb(255 194 74 / 0.05);
-}
-.guide__safety h3 {
-  color: var(--warn);
+  border: 1px solid var(--balloon-border);
+  border-radius: 8px;
+  background: var(--balloon-bg);
 }
 .guide__safety p {
   margin: 0;
   color: var(--text-dim);
-  font-size: 13px;
-}
-@keyframes tcs-dialog-in {
-  from {
-    opacity: 0;
-    transform: translateY(8px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
 }

@@ -57,7 +57,7 @@ export function StepList({ steps, gain, frequency, onChange }: StepListProps) {
             <NumberInput value={s.duration} onChange={(duration) => patch(i, { duration })} min={DURATION_MIN} max={DURATION_MAX} step={0.01} precision={2} unit="s" className="mode-frequency__step-dur" aria-label={`Step ${i + 1} duration`} />
             <NumberInput value={s.gap} onChange={(gap) => patch(i, { gap })} min={0} max={GAP_MAX} step={0.01} precision={2} unit="s" className="mode-frequency__step-gap" aria-label={`Step ${i + 1} gap`} />
             <span className="mode-frequency__step-actions">
-              <HoldButton size="sm" frequency={s.frequency} gain={gain} title="Hold to test this step" aria-label={`Hold to test step ${i + 1}`}>
+              <HoldButton size="sm" variant="play" frequency={s.frequency} gain={gain} title="Hold to test this step" aria-label={`Hold to test step ${i + 1}`}>
                 ▶
               </HoldButton>
               <Button size="sm" variant="ghost" onClick={() => move(i, -1)} disabled={i === 0} aria-label={`Move step ${i + 1} up`}>

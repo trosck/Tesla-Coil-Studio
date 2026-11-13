@@ -1,13 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useState, type ButtonHTMLAttributes, type CSSProperties, type ReactNode } from 'react';
 import { downloadBlob, timestampedName } from '../../audio/export/renderWav';
 import type { Waveform } from '../../audio/types';
 import { usePlayback, useStudio } from '../../studio/StudioContext';
-import { Button, Icon, SegmentedControl, Slider, type SegmentOption } from '../ui';
-import { ExportDialog } from './ExportDialog';
+import { InfoIcon } from '../shell/icons';
+import { useNowShowing } from '../shell/nowShowing';
+import { Button, Icon, SegmentedControl, type SegmentOption } from '../ui';
+import { VisualizerPanel } from '../visualizer/VisualizerPanel';
+import { openExport } from './exportStore';
 import './transport.css';
 
 const WAVEFORMS: readonly SegmentOption<Waveform>[] = [
-  { value: 'square', label: 'Square', badge: 'recommended', title: 'Square wave — strongest, clearest arcs on a Tesla coil' },
+  { value: 'square', label: 'Square', badge: 'Best', title: 'Square wave — strongest, clearest arcs on a Tesla coil' },
   { value: 'sine', label: 'Sine' },
   { value: 'triangle', label: 'Triangle' },
   { value: 'sawtooth', label: 'Saw' },
@@ -38,8 +41,59 @@ function spaceBelongsToTarget(t: EventTarget | null): boolean {
   return role === 'button' || role === 'radio' || role === 'switch' || role === 'checkbox' || role === 'option' || role === 'menuitem' || role === 'gridcell' || role === 'textbox';
 }
 
+/** Chrome slider with an LCD value chip (MASTER VOLUME, DUTY CYCLE). */
+function DeckSlider({ label, value, min, max, onChange, disabled, hint }: { label: string; value: number; min: number; max: number; onChange: (v: number) => void; disabled?: boolean; hint?: string }) {
+  const id = useId();
+  const pct = ((value - min) / (max - min)) * 100;
+  return (
+    <div className="deck-slider">
+      <div className="deck-slider__head">
+        <label className="deck-label" htmlFor={id}>
+          {label}
+        </label>
+        <span className={['lcd-chip', disabled && 'deck-slider__chip--off'].filter(Boolean).join(' ')} aria-hidden="true">
+          {value}%
+        </span>
+      </div>
+      <input
+        id={id}
+        className="ui-range"
+        type="range"
+        min={min}
+        max={max}
+        step={1}
+        value={value}
+        disabled={disabled}
+        style={{ '--pct': `${pct}%` } as CSSProperties}
+        aria-valuetext={`${value}%`}
+        aria-describedby={hint ? `${id}-hint` : undefined}
+        onChange={(e) => onChange(Number(e.target.value))}
+      />
+      {hint && (
+        <span id={`${id}-hint`} className="deck-slider__hint">
+          {hint}
+        </span>
+      )}
+    </div>
+  );
+}
+
+/** Round gel transport key with its caption underneath. */
+function DeckKey({ gel, icon, label, className, ...rest }: { gel: 'green' | 'blue'; icon: ReactNode; label: ReactNode } & ButtonHTMLAttributes<HTMLButtonElement>) {
+  return (
+    <button type="button" className={['deck-key', `deck-key--${gel}`, className].filter(Boolean).join(' ')} {...rest}>
+      <span className={`gel gel-${gel} deck-key__gel`} aria-hidden="true">
+        {icon}
+      </span>
+      <span className="deck-key__label">{label}</span>
+    </button>
+  );
+}
+
+/** Player deck: LCD + transport keys + master volume / waveform / duty, plus the first-tap balloon. */
 export function TransportBar() {
   const { engine, activePlayable, play, pause, stop } = useStudio();
+  const { sourceMode, name } = useNowShowing();
   const isPlaying = usePlayback((s) => s.isPlaying);
   const isPaused = usePlayback((s) => s.isPaused);
   const loop = usePlayback((s) => s.loop);
@@ -48,7 +102,6 @@ export function TransportBar() {
   const volume = usePlayback((s) => s.masterVolume);
   const waveform = usePlayback((s) => s.waveform);
   const duty = usePlayback((s) => s.duty);
-  const [exportOpen, setExportOpen] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const canPlay = activePlayable !== null || isPaused;
@@ -81,98 +134,90 @@ export function TransportBar() {
   }, [engine, play, pause]);
 
   const audioStatus = usePlayback((s) => s.audioStatus);
-  const audioLocked = audioStatus === 'uninitialized' || audioStatus === 'suspended' || audioStatus === 'interrupted';
   // Still "playing" but the browser/system paused the AudioContext (or it failed): PLAY resumes/retries it.
   const needsResume = isPlaying && (audioStatus === 'suspended' || audioStatus === 'interrupted' || audioStatus === 'error');
   const recLabel = `${Math.floor(recSeconds / 60)}:${String(recSeconds % 60).padStart(2, '0')}`;
+  const playLabel = isPaused || needsResume ? 'RESUME' : isPlaying ? 'PLAYING' : 'PLAY';
 
   return (
-    <section className="transport" aria-label="Transport">
-      <div className="transport__buttons" role="group" aria-label="Playback controls">
-        <Button
-          variant="primary"
-          size="lg"
-          icon={<Icon name="play" />}
-          onClick={() => void (needsResume ? engine.ensureStarted() : play()).catch(() => undefined)}
-          disabled={!canPlay || (isPlaying && !needsResume)}
-          className={['transport__btn', isPlaying && 'transport__playing'].filter(Boolean).join(' ')}
-          data-space="transport"
-          title={activePlayable || isPaused ? 'Play (Space)' : 'This mode has nothing to play yet'}
-        >
-          <span className="transport__label">{isPaused || needsResume ? 'RESUME' : isPlaying ? 'PLAYING' : 'PLAY'}</span>
-        </Button>
-        <Button size="lg" className="transport__btn" icon={<Icon name="pause" />} onClick={pause} disabled={!isPlaying} data-space="transport" title="Pause (Space)">
-          <span className="transport__label">PAUSE</span>
-        </Button>
-        <Button size="lg" className="transport__btn" icon={<Icon name="stop" />} onClick={stop} disabled={!isPlaying && !isPaused} title="Stop and rewind">
-          <span className="transport__label">STOP</span>
-        </Button>
-        <Button size="lg" className="transport__btn" icon={<Icon name="loop" />} pressed={loop} onClick={() => engine.setLoop(!loop)} title={loop ? 'Loop on: repeats until STOP' : 'Loop off: plays once'}>
-          <span className="transport__label">LOOP</span>
-        </Button>
-        <Button
-          size="lg"
-          variant="danger"
-          className="transport__btn"
-          icon={<Icon name="record" />}
-          pressed={isRecording}
-          onClick={() => void toggleRecord()}
-          disabled={busy}
-          title={isRecording ? 'Stop recording and download the WAV' : 'Record the live output to a WAV file'}
-        >
-          <span className="transport__label">
-            {isRecording ? (
-              <>
-                <span className="transport__long">REC </span>
-                <span className="mono">{recLabel}</span>
-              </>
-            ) : (
-              <>
-                REC<span className="transport__long">ORD</span>
-              </>
-            )}
-          </span>
-        </Button>
-        <Button size="lg" className="transport__btn" icon={<Icon name="download" />} onClick={() => setExportOpen(true)} disabled={!activePlayable} title="Render the current mode to a WAV file">
-          <span className="transport__label">
-            <span className="transport__long">EXPORT </span>WAV
-          </span>
-        </Button>
-      </div>
-      <p className="transport__note">
-        <span className="transport__warn" aria-hidden="true">
-          ⚠
-        </span>
-        {audioLocked ? (
-          <span>
-            <strong>Tap PLAY to start sound</strong> — browsers need one tap first. This app controls only the audio signal, not the coil&apos;s electrical power.
-          </span>
-        ) : (
-          <span>This app controls only the audio signal, not the coil&apos;s electrical power.</span>
-        )}
-      </p>
-      <div className="transport__settings">
-        <Slider className="transport__volume" label="Master volume" value={Math.round(volume * 100)} min={0} max={100} step={1} unit="%" onChange={(v) => engine.setMasterVolume(v / 100)} />
-        <div className="ui-field transport__wave">
-          <span className="ui-field__label" id="wf-label">
-            Waveform
-          </span>
-          <SegmentedControl aria-label="Waveform" value={waveform} options={WAVEFORMS} onChange={(w) => engine.setWaveform(w)} />
+    <section className="deck" aria-label="Player">
+      <div className="chrome deck__body">
+        <VisualizerPanel mode={sourceMode.label} name={name} />
+        <div className="deck__controls">
+          <div className="deck__buttons" role="group" aria-label="Playback controls">
+            <div className="deck__keys">
+              <DeckKey
+                gel="green"
+                className={['deck-key--main', isPlaying && !needsResume && 'deck-key--playing'].filter(Boolean).join(' ')}
+                icon={<Icon name="play" />}
+                label={playLabel}
+                onClick={() => void (needsResume ? engine.ensureStarted() : play()).catch(() => undefined)}
+                disabled={!canPlay || (isPlaying && !needsResume)}
+                data-space="transport"
+                title={activePlayable || isPaused ? 'Play (Space)' : 'This mode has nothing to play yet'}
+              />
+              <DeckKey gel="blue" icon={<Icon name="pause" />} label="PAUSE" onClick={pause} disabled={!isPlaying} data-space="transport" title="Pause (Space)" />
+              <DeckKey gel="blue" icon={<Icon name="stop" />} label="STOP" onClick={stop} disabled={!isPlaying && !isPaused} title="Stop and rewind" />
+            </div>
+            <div className="deck__toggles">
+              <Button className="deck-toggle" icon={<Icon name="loop" />} pressed={loop} onClick={() => engine.setLoop(!loop)} title={loop ? 'Loop on: repeats until STOP' : 'Loop off: plays once'}>
+                <span className="deck-toggle__label">LOOP</span>
+              </Button>
+              <Button
+                variant="danger"
+                className="deck-toggle"
+                icon={<Icon name="record" />}
+                pressed={isRecording}
+                onClick={() => void toggleRecord()}
+                disabled={busy}
+                title={isRecording ? 'Stop recording and download the WAV' : 'Record the live output to a WAV file'}
+              >
+                <span className="deck-toggle__label">
+                  {isRecording ? (
+                    <>
+                      <span className="deck-long">REC </span>
+                      <span className="deck-mono">{recLabel}</span>
+                    </>
+                  ) : (
+                    <>
+                      REC<span className="deck-long">ORD</span>
+                    </>
+                  )}
+                </span>
+              </Button>
+              <Button className="deck-toggle" icon={<Icon name="download" />} onClick={openExport} disabled={!activePlayable} title="Render the current mode to a WAV file">
+                <span className="deck-toggle__label">
+                  <span className="deck-long">EXPORT </span>WAV
+                </span>
+              </Button>
+            </div>
+          </div>
+          <DeckSlider label="MASTER VOLUME" value={Math.round(volume * 100)} min={0} max={100} onChange={(v) => engine.setMasterVolume(v / 100)} />
+          <div className="deck-wave">
+            <span className="deck-label" aria-hidden="true">
+              WAVEFORM
+            </span>
+            <SegmentedControl aria-label="Waveform" value={waveform} options={WAVEFORMS} onChange={(w) => engine.setWaveform(w)} />
+          </div>
+          <DeckSlider
+            label="DUTY CYCLE"
+            value={Math.round(duty * 100)}
+            min={1}
+            max={99}
+            disabled={waveform !== 'square'}
+            hint={waveform === 'square' ? undefined : 'Applies to square wave'}
+            onChange={(v) => engine.setDuty(v / 100)}
+          />
         </div>
-        <Slider
-          className="transport__duty"
-          label="Duty cycle"
-          value={Math.round(duty * 100)}
-          min={1}
-          max={99}
-          step={1}
-          unit="%"
-          disabled={waveform !== 'square'}
-          hint={waveform === 'square' ? undefined : 'Applies to square wave'}
-          onChange={(v) => engine.setDuty(v / 100)}
-        />
       </div>
-      {exportOpen && activePlayable && <ExportDialog playable={activePlayable} onClose={() => setExportOpen(false)} />}
+      {audioStatus === 'uninitialized' && (
+        <div className="balloon balloon--tail deck__tip" role="note">
+          <InfoIcon />
+          <p>
+            <b>Tap PLAY to start sound</b> — browsers need one tap first. This app controls only the audio signal, not the coil&apos;s electrical power.
+          </p>
+        </div>
+      )}
     </section>
   );
 }

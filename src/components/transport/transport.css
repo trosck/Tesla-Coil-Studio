@@ -1,70 +1,185 @@
-.transport {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  padding: var(--space-4);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  background: linear-gradient(180deg, var(--surface-2), var(--surface));
-  box-shadow: 0 10px 40px rgb(0 0 0 / 0.35);
+/* Player deck: brushed-chrome console with the LCD, gel transport keys and sliders. */
+.deck {
+  padding: 16px 18px 6px;
 }
-.transport__buttons {
+.deck__body {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2);
+  gap: 16px;
+  padding: 14px;
+  border-radius: 22px;
+  box-shadow: inset 0 1px 0 var(--surface), 0 3px 8px color-mix(in srgb, var(--win-border) 30%, transparent);
 }
-.transport__buttons .ui-btn {
-  flex: 1 1 120px;
+.deck__controls {
+  flex: 1 1 360px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 4px 4px 2px;
 }
-.transport__label {
+.deck__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+}
+.deck__keys {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+}
+.deck__toggles {
+  display: flex;
+  flex: 1 1 160px;
+  flex-direction: column;
+  gap: 8px;
+}
+.deck-label {
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 0.14em;
+  color: var(--text-dim);
+}
+.deck-long {
   white-space: nowrap;
 }
-.transport__note {
+.deck-mono {
+  font-variant-numeric: tabular-nums;
+}
+
+/* round gel keys */
+.deck-key {
   display: flex;
-  align-items: baseline;
-  gap: var(--space-2);
-  margin: calc(var(--space-2) * -1) 0 0;
-  font-size: 12px;
-  color: var(--text-faint);
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius);
+  background: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  touch-action: manipulation;
 }
-.transport__note strong {
-  color: var(--cyan);
-  font-weight: 600;
+.deck-key__gel {
+  width: 54px;
+  height: 54px;
 }
-.transport__warn {
-  color: var(--warn);
+.deck-key__gel svg {
+  width: 20px;
+  height: 20px;
 }
-.transport__playing {
-  animation: tcs-pulse 1.6s ease-in-out infinite;
+.deck-key--main .deck-key__gel {
+  width: 76px;
+  height: 76px;
 }
-@keyframes tcs-pulse {
+.deck-key--main .deck-key__gel svg {
+  width: 30px;
+  height: 30px;
+}
+.deck-key__label {
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 0.12em;
+  white-space: nowrap;
+}
+.deck-key:hover:not(:disabled) > .gel {
+  filter: brightness(1.08) saturate(1.1);
+}
+.deck-key:active:not(:disabled) > .gel {
+  transform: translateY(1px);
+  filter: brightness(0.94);
+}
+.deck-key:disabled {
+  cursor: not-allowed;
+}
+.deck-key:disabled > .gel.gel {
+  filter: grayscale(0.7) opacity(0.55);
+  cursor: not-allowed;
+}
+.deck-key:disabled .deck-key__label {
+  opacity: 0.6;
+}
+.deck-key--playing > .gel {
+  animation: deck-glow 1.6s ease-in-out infinite;
+}
+@keyframes deck-glow {
   0%,
   100% {
-    box-shadow: 0 0 0 1px rgb(34 229 255 / 0.4), 0 0 12px rgb(34 229 255 / 0.2);
+    box-shadow: var(--gel-shadow), 0 0 0 2px var(--surface), 0 0 0 3px var(--ok);
   }
   50% {
-    box-shadow: 0 0 0 1px rgb(34 229 255 / 0.8), 0 0 26px rgb(34 229 255 / 0.45);
-  }
-}
-.transport__settings {
-  display: grid;
-  grid-template-columns: minmax(200px, 1fr) auto minmax(200px, 1fr);
-  gap: var(--space-5);
-  align-items: start;
-}
-@media (max-width: 960px) {
-  .transport__settings {
-    grid-template-columns: minmax(0, 1fr);
-    gap: var(--space-3);
+    box-shadow: var(--gel-shadow), 0 0 0 2px var(--surface), 0 0 0 6px var(--ok);
   }
 }
 
-/* Phones: the playback buttons become a fixed bottom bar so they stay reachable. */
-@media (max-width: 720px) {
-  .transport {
-    padding: var(--space-3);
+/* LOOP / RECORD / EXPORT WAV */
+.ui-btn.deck-toggle {
+  height: 34px;
+  min-height: 34px;
+}
+
+/* sliders */
+.deck-slider {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.deck-slider__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+.deck-slider__chip--off {
+  opacity: 0.5;
+}
+.deck-slider__hint {
+  font-size: 11px;
+  color: var(--text-faint);
+}
+.deck-wave {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.deck-wave .ui-seg__opt {
+  min-height: 34px;
+  padding: 0 14px;
+  font-size: 13px;
+}
+
+/* "Tap PLAY" balloon */
+.deck__tip {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  max-width: 760px;
+  margin: 14px 0 4px 40px;
+  padding: 10px 14px;
+}
+.deck__tip p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+/* Phones: the six transport buttons become a fixed compact chrome bar at the bottom. */
+@media (max-width: 760px) {
+  .deck {
+    padding: 10px 8px 4px;
   }
-  .transport__buttons {
+  .deck__body {
+    gap: 12px;
+    padding: 10px;
+    border-radius: 16px;
+  }
+  .deck__controls {
+    flex-basis: 100%;
+    padding: 0;
+  }
+  .deck__buttons {
     position: fixed;
     z-index: 40;
     right: 0;
@@ -73,72 +188,62 @@
     display: grid;
     grid-template-columns: repeat(6, minmax(0, 1fr));
     gap: var(--space-1);
-    padding: var(--space-2) var(--space-2) calc(var(--space-2) + env(safe-area-inset-bottom, 0px));
-    border-top: 1px solid var(--border-strong);
-    background: rgb(17 20 27 / 0.94);
-    backdrop-filter: blur(10px);
-    box-shadow: 0 -10px 30px rgb(0 0 0 / 0.45);
+    padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid var(--chrome-border);
+    background: var(--chrome);
+    box-shadow: inset 0 1px 0 var(--surface), 0 -4px 14px color-mix(in srgb, var(--win-border) 35%, transparent);
   }
-  .transport__buttons .ui-btn {
-    flex-direction: column;
-    gap: 2px;
+  .deck__keys,
+  .deck__toggles {
+    display: contents;
+  }
+  .deck-key,
+  .deck-toggle.ui-btn {
+    justify-content: center;
     min-width: 0;
+    height: 54px;
     min-height: 54px;
-    padding: var(--space-1) 2px;
+  }
+  .deck-key__gel,
+  .deck-key--main .deck-key__gel {
+    width: 36px;
+    height: 36px;
+  }
+  .deck-key__gel svg,
+  .deck-key--main .deck-key__gel svg {
+    width: 16px;
+    height: 16px;
+  }
+  .deck-key__label {
     font-size: 10px;
     letter-spacing: 0.04em;
   }
-  .transport__buttons .ui-btn__icon {
-    width: 20px;
-    height: 20px;
+  .deck-toggle.ui-btn {
+    flex-direction: column;
+    gap: 2px;
+    padding: 4px 2px;
+    border-radius: 12px;
+    font-size: 10px;
+    letter-spacing: 0.04em;
   }
-  .transport__long {
+  .deck-toggle .ui-btn__icon {
+    width: 18px;
+    height: 18px;
+  }
+  .deck-long {
     display: none;
   }
-  .transport__note {
-    margin: 0;
+  .deck__tip {
+    margin: 12px 0 4px 8px;
   }
 }
 
-/* export dialog */
-.export {
-  width: min(440px, calc(100vw - 32px));
-  padding: 0;
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-lg);
-  background: var(--surface);
-  color: var(--text);
-  box-shadow: 0 30px 80px rgb(0 0 0 / 0.6), var(--accent-glow);
+/* Export WAV dialog body (frame: .xp-dialog in shell.css) */
+.win.export {
+  width: min(440px, calc(100vw - 24px));
 }
-.export::backdrop {
-  background: rgb(5 6 10 / 0.7);
-  backdrop-filter: blur(3px);
-}
-.export__head,
-.export__foot {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2);
-  padding: var(--space-3) var(--space-4);
-}
-.export__head {
-  border-bottom: 1px solid var(--border);
-}
-.export__head h2 {
-  margin: 0;
-  font-size: 16px;
-  letter-spacing: 0.04em;
-}
-.export__foot {
-  justify-content: flex-end;
-  border-top: 1px solid var(--border);
-}
-.export__body {
-  display: flex;
-  flex-direction: column;
+.xp-dialog__body.export__body {
   gap: var(--space-4);
-  padding: var(--space-4);
 }
 .export__fixed {
   margin: 0;

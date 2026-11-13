@@ -55,11 +55,13 @@ function drawStatic(ctx: CanvasRenderingContext2D, p: PianoRollProps, w: number,
   ctx.clearRect(0, 0, w, h);
   const s = p.summary;
   const colors = {
-    bg: cssVar('--bg', '#0b0d12'),
-    grid: cssVar('--border', '#2a3142'),
-    text: cssVar('--text-faint', '#66728a'),
-    dim: cssVar('--purple', '#a259ff'),
-    hot: cssVar('--cyan', '#22e5ff'),
+    bg: cssVar('--surface', '#ffffff'),
+    shade: cssVar('--surface-3', '#ece9d8'),
+    grid: cssVar('--border', '#c9c4ae'),
+    text: cssVar('--text-faint', '#6b7890'),
+    dim: cssVar('--mode-midi-1', '#b8c4d6'),
+    hot: cssVar('--mode-midi-2', '#56667f'),
+    mark: cssVar('--select-bg', '#316ac5'),
   };
   ctx.fillStyle = colors.bg;
   ctx.fillRect(0, 0, w, h);
@@ -99,7 +101,7 @@ function drawStatic(ctx: CanvasRenderingContext2D, p: PianoRollProps, w: number,
   const noteH = Math.max(1, rowH - (rowH > 4 ? 1 : 0));
 
   // octave grid + labels
-  ctx.font = `10px ${cssVar('--font-mono', 'monospace')}`;
+  ctx.font = `10px ${cssVar('--font-ui', 'sans-serif')}`;
   ctx.textBaseline = 'middle';
   for (let m = Math.ceil(lo / 12) * 12; m <= hi; m += 12) {
     const y = Math.round(yOf(m) + rowH) + 0.5;
@@ -146,7 +148,7 @@ function drawStatic(ctx: CanvasRenderingContext2D, p: PianoRollProps, w: number,
 
   // original notes (dimmed)
   ctx.fillStyle = colors.dim;
-  ctx.globalAlpha = 0.28;
+  ctx.globalAlpha = 0.8;
   for (const t of tracks) {
     for (const n of t.notes) {
       if (n.time > t1 || n.time + n.duration < t0) continue;
@@ -167,14 +169,14 @@ function drawStatic(ctx: CanvasRenderingContext2D, p: PianoRollProps, w: number,
 
   // section shading (file view)
   if (p.view === 'file' && (p.window.start > 0 || p.window.end < s.duration)) {
-    ctx.fillStyle = colors.bg;
-    ctx.globalAlpha = 0.6;
+    ctx.fillStyle = colors.shade;
+    ctx.globalAlpha = 0.7;
     const xa = xOf(l, p.window.start);
     const xb = xOf(l, p.window.end);
     ctx.fillRect(GUTTER, 0, xa - GUTTER, plotH);
     ctx.fillRect(xb, 0, w - xb, plotH);
     ctx.globalAlpha = 1;
-    ctx.strokeStyle = colors.hot;
+    ctx.strokeStyle = colors.mark;
     ctx.setLineDash([4, 4]);
     ctx.beginPath();
     ctx.moveTo(Math.round(xa) + 0.5, 0);
@@ -210,8 +212,8 @@ export function PianoRoll(props: PianoRollProps) {
     const layer = document.createElement('canvas');
     const lctx = layer.getContext('2d');
     let key = '';
-    const hot = cssVar('--cyan', '#22e5ff');
-    const warn = cssVar('--warn', '#ffc24a');
+    const mark = cssVar('--select-bg', '#316ac5');
+    const head = cssVar('--danger', '#cf2c22');
     return startCanvasLoop(canvas, (ctx, w, h, dpr) => {
       const p = propsRef.current;
       const k = `${w}x${h}@${dpr}#${versionRef.current}`;
@@ -233,8 +235,8 @@ export function PianoRoll(props: PianoRollProps) {
       if (d) {
         const xa = xOf(l, Math.min(d.from, d.to));
         const xb = xOf(l, Math.max(d.from, d.to));
-        ctx.fillStyle = hot;
-        ctx.globalAlpha = 0.15;
+        ctx.fillStyle = mark;
+        ctx.globalAlpha = 0.2;
         ctx.fillRect(xa, 0, xb - xa, plotH);
         ctx.globalAlpha = 1;
       }
@@ -245,15 +247,12 @@ export function PianoRoll(props: PianoRollProps) {
         const ft = p.window.start + st.position * p.speed;
         if (ft >= l.t0 && ft <= l.t1) {
           const x = Math.round(xOf(l, ft)) + 0.5;
-          ctx.strokeStyle = warn;
+          ctx.strokeStyle = head;
           ctx.lineWidth = 1.5;
-          ctx.shadowColor = warn;
-          ctx.shadowBlur = 8;
           ctx.beginPath();
           ctx.moveTo(x, 0);
           ctx.lineTo(x, plotH);
           ctx.stroke();
-          ctx.shadowBlur = 0;
           ctx.lineWidth = 1;
         }
       }

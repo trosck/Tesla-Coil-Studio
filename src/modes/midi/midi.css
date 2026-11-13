@@ -42,9 +42,9 @@
 .mode-midi__error {
   margin: 0;
   padding: var(--space-2) var(--space-3);
-  border: 1px solid rgb(255 77 109 / 0.5);
+  border: 1px solid var(--danger);
   border-radius: var(--radius-sm);
-  background: rgb(255 77 109 / 0.1);
+  background: color-mix(in srgb, var(--danger) 8%, var(--surface));
   color: var(--danger);
   font-size: 13px;
 }
@@ -62,11 +62,9 @@
   gap: var(--space-1);
   min-height: 104px;
   padding: var(--space-4);
-  border: 1.5px dashed var(--border-strong);
+  border: 2px dashed var(--field-border);
   border-radius: var(--radius);
-  background:
-    repeating-linear-gradient(135deg, rgb(34 229 255 / 0.03) 0 8px, transparent 8px 16px),
-    var(--bg-elev);
+  background: var(--tp-body);
   text-align: center;
   cursor: pointer;
   transition:
@@ -75,13 +73,13 @@
     background var(--dur) var(--ease);
 }
 .mode-midi__drop:hover,
-.mode-midi__drop:focus-within,
 .mode-midi__drop[data-dragging] {
-  border-color: var(--accent);
-  box-shadow: var(--accent-glow);
+  border-color: var(--field-border-hover);
+  background: color-mix(in srgb, var(--select-bg) 14%, var(--tp-body));
 }
-.mode-midi__drop[data-dragging] {
-  background: rgb(34 229 255 / 0.08);
+.mode-midi__drop:focus-within {
+  outline: 2px dotted var(--focus-ring);
+  outline-offset: 2px;
 }
 .mode-midi__file {
   position: absolute;
@@ -91,9 +89,8 @@
   width: 100%;
 }
 .mode-midi__drop-title {
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  color: var(--text);
+  font-weight: bold;
+  color: var(--tp-head-text);
 }
 .mode-midi__drop-sub {
   font-size: 12px;
@@ -112,31 +109,27 @@
 .mode-midi__stats > div {
   min-width: 0;
   padding: var(--space-2);
-  border: 1px solid var(--border);
+  border: 1px solid var(--chip-border);
   border-radius: var(--radius-sm);
-  background: var(--bg-elev);
+  background: var(--chip-bg);
 }
 .mode-midi__info dt,
 .mode-midi__stats dt {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--text-faint);
+  font-size: 11px;
+  font-weight: bold;
+  color: var(--text-dim);
 }
 .mode-midi__info dd,
 .mode-midi__stats dd {
-  margin: 2px 0 0;
-  font-family: var(--font-mono);
-  font-size: 13px;
-  color: var(--text);
+  margin: 0;
+  font-family: var(--font-lcd);
+  font-size: 20px;
+  line-height: 1.1;
+  color: var(--chip-text);
+  font-variant-numeric: tabular-nums;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-.mode-midi__stats dd {
-  color: var(--accent);
-  text-shadow: 0 0 10px rgb(34 229 255 / 0.35);
 }
 .mode-midi__tempos {
   overflow-wrap: anywhere;
@@ -151,7 +144,10 @@
   flex-direction: column;
   gap: var(--space-1);
   max-height: 300px;
+  padding: 2px;
   overflow-y: auto;
+  border: 1px solid var(--field-border);
+  background: var(--field-bg);
 }
 .mode-midi__track {
   display: flex;
@@ -160,9 +156,9 @@
   width: 100%;
   min-height: var(--touch-h);
   padding: var(--space-2) var(--space-3);
-  border: 1px solid var(--border);
+  border: 1px solid transparent;
   border-radius: var(--radius-sm);
-  background: var(--bg-elev);
+  background: var(--surface);
   color: var(--text-dim);
   text-align: left;
   font: inherit;
@@ -173,30 +169,38 @@
     color var(--dur) var(--ease);
 }
 .mode-midi__track:hover {
-  border-color: var(--border-strong);
-  background: var(--surface-2);
+  border-color: var(--tp-item-hover-border);
+  background: var(--tp-body);
 }
 .mode-midi__track:focus-visible {
-  outline: none;
-  box-shadow: var(--accent-glow);
+  outline: 2px dotted var(--focus-ring);
+  outline-offset: -2px;
 }
 .mode-midi__track[aria-checked='true'] {
-  border-color: rgb(34 229 255 / 0.55);
-  background: rgb(34 229 255 / 0.07);
+  border-color: var(--tp-item-hover-border);
+  background: color-mix(in srgb, var(--mode-midi-1) 30%, var(--surface));
   color: var(--text);
 }
+/* XP checkbox */
 .mode-midi__check {
+  position: relative;
   flex: none;
-  width: 16px;
-  height: 16px;
-  border: 1.5px solid var(--border-strong);
-  border-radius: 4px;
-  background: var(--surface);
+  width: 15px;
+  height: 15px;
+  border: 1px solid var(--field-border);
+  border-radius: 0;
+  background: linear-gradient(135deg, var(--surface-3), var(--surface));
 }
-.mode-midi__track[aria-checked='true'] .mode-midi__check {
-  border-color: var(--accent);
-  background: var(--accent);
-  box-shadow: 0 0 10px rgb(34 229 255 / 0.5);
+.mode-midi__track[aria-checked='true'] .mode-midi__check::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 4px;
+  height: 8px;
+  border: solid var(--ok);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
 }
 .mode-midi__track-main {
   display: flex;
@@ -205,7 +209,7 @@
   flex: 1;
 }
 .mode-midi__track-name {
-  font-weight: 600;
+  font-weight: bold;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -222,20 +226,15 @@
   flex-direction: column;
   align-items: flex-end;
   gap: 2px;
-  font-family: var(--font-mono);
   font-size: 12px;
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 .mode-midi__badge {
-  padding: 0 6px;
-  border: 1px solid rgb(255 194 74 / 0.5);
-  border-radius: 999px;
+  /* look: .chip (y2k.css) */
+  border-color: var(--warn);
   color: var(--warn);
-  font-family: var(--font-sans);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-size: 14px;
 }
 .mode-midi__track[data-drums] .mode-midi__track-name {
   color: var(--text-dim);
@@ -246,10 +245,8 @@
   display: block;
   width: 100%;
   height: clamp(200px, 38vh, 360px);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--bg);
-  box-shadow: inset 0 0 30px rgb(0 0 0 / 0.5);
+  border: 1px solid var(--field-border);
+  background: var(--surface);
   touch-action: pan-y;
 }
 .mode-midi__roll[data-interactive] {
@@ -274,13 +271,12 @@
   height: 6px;
   border-radius: 2px;
 }
+/* match the colours PianoRoll.tsx draws with */
 .mode-midi__swatch--orig {
-  background: var(--purple);
-  opacity: 0.45;
+  background: var(--mode-midi-1);
 }
 .mode-midi__swatch--mono {
-  background: var(--cyan);
-  box-shadow: 0 0 8px rgb(34 229 255 / 0.6);
+  background: var(--mode-midi-2);
 }
 .mode-midi__empty {
   color: var(--text-faint);

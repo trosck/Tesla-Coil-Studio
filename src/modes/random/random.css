@@ -26,11 +26,9 @@
   gap: var(--space-2);
 }
 .mode-random__seed-label {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--text-faint);
+  font-size: 12px;
+  font-weight: bold;
+  color: var(--tp-head-text);
 }
 .mode-random__seed .ui-number {
   width: 110px;
@@ -44,46 +42,49 @@
   font-size: 12px;
 }
 
-/* phrase plot */
+/* phrase plot: small LCD, same look as the Ramp/Siren curve preview */
 .mode-random__plot {
   display: block;
   width: 100%;
   height: 150px;
-  border: 1px solid var(--border);
+  border: 2px solid var(--lcd-border);
   border-radius: var(--radius);
-  background:
-    linear-gradient(180deg, rgb(162 89 255 / 0.05), transparent 70%),
-    var(--bg);
+  background: var(--lcd-bg);
+  box-shadow: inset 0 2px 6px var(--lcd-ink-dim), 0 1px 0 var(--surface);
 }
 .mode-random__lane {
-  stroke: rgb(255 255 255 / 0.05);
+  stroke: var(--lcd-ink-faint);
   stroke-width: 1;
+  stroke-dasharray: 2 4;
 }
 .mode-random__beat {
-  stroke: rgb(255 255 255 / 0.04);
+  stroke: var(--lcd-ink-faint);
   stroke-width: 1;
 }
 .mode-random__bar {
-  stroke: var(--border-strong);
+  stroke: var(--lcd-ink-dim);
   stroke-width: 1;
 }
 .mode-random__note {
-  fill: var(--cyan);
-  filter: drop-shadow(0 0 3px rgb(34 229 255 / 0.6));
+  fill: var(--lcd-ink);
+  fill-opacity: 0.75;
 }
 .mode-random__note--now {
-  fill: var(--purple);
-  filter: drop-shadow(0 0 6px rgb(162 89 255 / 0.9));
+  fill-opacity: 1;
+  stroke: var(--lcd-ink);
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
 }
 .mode-random__caption {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
-  gap: var(--space-2);
+  gap: 0 var(--space-2);
   margin-top: var(--space-1);
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--text-faint);
+  font-family: var(--font-lcd);
+  font-size: 16px;
+  line-height: 1.1;
+  color: var(--text-dim);
 }
 
 @media (max-width: 480px) {

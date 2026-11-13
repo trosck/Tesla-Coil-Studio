@@ -189,7 +189,7 @@ export function StatusHelp({ status, error }: StatusHelpProps) {
               const current = s === status;
               return (
                 <li key={s} className={`status-help__row status-help__row--${s}${current ? ' is-current' : ''}`} aria-current={current ? 'true' : undefined}>
-                  <span className="app-status__dot" aria-hidden="true" />
+                  <span className={`status-led status-led--${s}`} aria-hidden="true" />
                   <div className="status-help__body">
                     <div className="status-help__label">
                       {STATUS_TEXT[s]}

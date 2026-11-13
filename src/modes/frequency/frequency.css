@@ -6,8 +6,9 @@
   min-width: 0;
 }
 .mode-frequency__mono {
-  font-family: var(--font-mono);
   color: var(--text-dim);
+  font-weight: bold;
+  font-variant-numeric: tabular-nums;
 }
 .mode-frequency__warn {
   color: var(--warn);
@@ -31,64 +32,56 @@
   }
 }
 .mode-frequency__big {
-  position: relative;
+  /* look: .lcd (y2k.css) */
   display: flex;
   flex-direction: column;
   justify-content: center;
   gap: var(--space-1);
   min-width: 0;
-  padding: var(--space-4) var(--space-5);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-lg);
-  background:
-    radial-gradient(120% 140% at 0% 0%, rgb(34 229 255 / 0.1), transparent 60%),
-    linear-gradient(180deg, #05070b, #0b0e15);
-  box-shadow: inset 0 0 30px rgb(0 0 0 / 0.55);
+  padding: var(--space-3) var(--space-5);
   overflow: hidden;
 }
-.mode-frequency__big.is-live {
-  border-color: rgb(34 229 255 / 0.6);
-  box-shadow:
-    inset 0 0 30px rgb(0 0 0 / 0.55),
-    var(--accent-glow);
+.mode-frequency__big > * {
+  position: relative; /* above the .lcd pixel grid */
+  z-index: 1;
 }
 .mode-frequency__big-tag {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.18em;
+  align-self: flex-start;
+  padding: 0 6px;
+  border: 1px solid var(--lcd-ink-dim);
+  border-radius: var(--radius-sm);
+  font-size: 16px;
+  line-height: 1.1;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--text-faint);
+  color: var(--lcd-ink-dim);
 }
 .mode-frequency__big.is-live .mode-frequency__big-tag {
-  color: var(--accent);
+  border-color: var(--lcd-ink);
+  background: var(--lcd-ink);
+  color: var(--lcd-flat);
 }
 .mode-frequency__big-value {
-  font-family: var(--font-mono);
+  font-family: var(--font-lcd);
   font-variant-numeric: tabular-nums;
-  font-size: clamp(34px, 7vw, 56px);
-  font-weight: 700;
-  line-height: 1.05;
-  color: var(--accent);
-  text-shadow:
-    0 0 12px rgb(34 229 255 / 0.55),
-    0 0 28px rgb(34 229 255 / 0.25);
+  font-size: clamp(48px, 11vw, 76px);
+  line-height: 0.95;
+  color: var(--lcd-ink);
   white-space: nowrap;
 }
 .mode-frequency__big-unit {
-  margin-left: 0.25em;
-  font-size: 0.4em;
-  color: var(--text-dim);
-  text-shadow: none;
+  margin-left: 0.2em;
+  font-size: 0.45em;
+  color: var(--lcd-ink-dim);
 }
 .mode-frequency__big-note {
-  font-family: var(--font-mono);
-  font-size: 15px;
-  color: var(--accent-2);
+  font-size: 22px;
+  line-height: 1.1;
+  color: var(--lcd-ink);
 }
 .mode-frequency__big-note span {
   margin-left: var(--space-2);
-  color: var(--text-dim);
-  font-size: 13px;
+  color: var(--lcd-ink-dim);
 }
 .mode-frequency__top-controls {
   display: flex;
@@ -116,8 +109,8 @@
   gap: var(--space-2);
 }
 .mode-frequency__quick .ui-btn {
-  min-height: 34px;
-  font-family: var(--font-mono);
+  min-height: 30px;
+  font-variant-numeric: tabular-nums;
 }
 
 /* ---------- freq control ---------- */
@@ -175,12 +168,12 @@
   gap: var(--space-2);
 }
 .mode-frequency__steps-head {
-  padding: 0 var(--space-2);
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text-faint);
+  padding: 4px var(--space-2);
+  border: 1px solid var(--menu-border);
+  background: var(--menu-face);
+  font-size: 11px;
+  font-weight: bold;
+  color: var(--text-dim);
 }
 .mode-frequency__step-list {
   display: flex;
@@ -194,21 +187,25 @@
   padding: var(--space-1) var(--space-2);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  background: var(--bg);
-  transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+  background: var(--surface);
+  transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease);
+}
+.mode-frequency__step:nth-child(even) {
+  background: var(--bg-elev);
 }
 .mode-frequency__step.is-playing {
-  border-color: var(--purple);
-  box-shadow: var(--purple-glow);
+  border-color: var(--mode-frequency-2);
+  background: color-mix(in srgb, var(--mode-frequency-1) 22%, var(--surface));
+  box-shadow: inset 3px 0 0 var(--mode-frequency-2);
 }
 .mode-frequency__step-index {
-  font-family: var(--font-mono);
-  font-size: 12px;
+  font-family: var(--font-lcd);
+  font-size: 18px;
   color: var(--text-faint);
   text-align: center;
 }
 .mode-frequency__step.is-playing .mode-frequency__step-index {
-  color: var(--purple);
+  color: var(--mode-frequency-2);
 }
 .mode-frequency__step-freq {
   display: flex;
@@ -222,9 +219,9 @@
 }
 .mode-frequency__step-note {
   flex: none;
-  width: 8ch;
-  font-family: var(--font-mono);
-  font-size: 11px;
+  width: 9ch;
+  font-family: var(--font-lcd);
+  font-size: 15px;
   color: var(--text-dim);
 }
 .mode-frequency__step-actions {
@@ -309,27 +306,27 @@
   margin: 0;
 }
 .mode-frequency__conv-out > div {
-  padding: var(--space-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--bg);
   min-width: 0;
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--chip-border);
+  border-radius: var(--radius-sm);
+  background: var(--chip-bg);
 }
 .mode-frequency__conv-out > div:last-child {
   grid-column: 1 / -1;
 }
 .mode-frequency__conv-out dt {
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text-faint);
+  font-size: 11px;
+  font-weight: bold;
+  color: var(--text-dim);
 }
 .mode-frequency__conv-out dd {
-  margin: 2px 0 0;
-  font-family: var(--font-mono);
-  font-size: 17px;
-  font-weight: 700;
-  color: var(--text);
+  margin: 0;
+  font-family: var(--font-lcd);
+  font-size: 22px;
+  line-height: 1.05;
+  color: var(--chip-text);
+  font-variant-numeric: tabular-nums;
 }
 .mode-frequency__conv-out dd.is-on {
   color: var(--ok);
@@ -345,18 +342,12 @@
 .mode-frequency__conv-result {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: var(--space-3);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--bg);
+  align-items: flex-start;
+  gap: var(--space-1);
 }
 .mode-frequency__conv-result-hz {
-  font-family: var(--font-mono);
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--accent);
-  text-shadow: 0 0 10px rgb(34 229 255 / 0.4);
+  /* look: .lcd-chip (y2k.css) */
+  font-size: 30px;
 }
 .mode-frequency__conv-actions {
   display: flex;
@@ -375,10 +366,12 @@
 .mode-frequency__preset-list {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: 2px;
   max-height: 320px;
   margin: 0;
-  padding: 0;
+  padding: 2px;
+  border: 1px solid var(--field-border);
+  background: var(--field-bg);
   overflow-y: auto;
   list-style: none;
 }
@@ -388,12 +381,13 @@
   justify-content: space-between;
   gap: var(--space-2);
   padding: var(--space-2) var(--space-3);
-  border: 1px solid var(--border);
+  border: 1px solid transparent;
   border-radius: var(--radius-sm);
-  background: var(--bg);
+  background: var(--surface);
 }
 .mode-frequency__preset:hover {
-  border-color: var(--border-strong);
+  border-color: var(--tp-item-hover-border);
+  background: var(--tp-body);
 }
 .mode-frequency__preset-text {
   display: flex;
@@ -402,13 +396,14 @@
 }
 .mode-frequency__preset-name {
   overflow: hidden;
-  font-weight: 600;
+  color: var(--link);
+  font-weight: bold;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .mode-frequency__preset-meta {
-  font-family: var(--font-mono);
   font-size: 11px;
+  font-variant-numeric: tabular-nums;
   color: var(--text-faint);
 }
 .mode-frequency__preset-actions {
