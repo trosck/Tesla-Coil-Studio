@@ -96,3 +96,32 @@ function validateEntry(item: unknown, normalize: (mode: ModeId, params: unknown)
 export function presetKey(p: Pick<Preset, 'mode' | 'name' | 'params'>): string {
   return `${p.mode}\u0000${p.name.trim().toLowerCase()}\u0000${JSON.stringify(p.params)}`;
 }
+
+/** Result of an import/export action, as shown to the user. */
+export interface PresetFileMessage {
+  kind: 'ok' | 'error';
+  text: string;
+}
+
+export const presetCount = (n: number): string => `${n} preset${n === 1 ? '' : 's'}`;
+
+/**
+ * Drop parsed presets that already exist (or repeat within the file) and
+ * build the user-facing summary. `existingKeys` are presetKey()s of the
+ * user's current presets.
+ */
+export function planImport(parsed: ImportResult, existingKeys: Iterable<string>): { fresh: PresetData[]; message: PresetFileMessage } {
+  const seen = new Set(existingKeys);
+  const fresh = parsed.presets.filter((p) => {
+    const k = presetKey(p);
+    if (seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
+  const dupes = parsed.presets.length - fresh.length;
+  const notes = [dupes > 0 && `${dupes} already present`, parsed.invalid > 0 && `${parsed.invalid} invalid skipped`].filter(Boolean).join(', ');
+  return {
+    fresh,
+    message: { kind: fresh.length > 0 || dupes > 0 ? 'ok' : 'error', text: `Imported ${presetCount(fresh.length)}${notes ? ` (${notes})` : ''}.` },
+  };
+}

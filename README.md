@@ -28,12 +28,15 @@ pnpm preview                 # serve dist/ locally
 
 Other scripts: `pnpm typecheck`, `pnpm lint`, `pnpm test`.
 
-The app opens on the **Presets** tab: pick a preset, press **▶ Play**.
+The app opens on the **Presets** mode: pick a preset, press **▶ Play**. The UI
+is a Windows XP / Y2K-style "Tesla Coil Studio 2000" desktop: modes are listed
+in the **Coil modes** task pane on the left, the player deck with its LCD sits
+at the top of the window.
 
 ## Setup guide (summary)
 
-The full guide is built in: click **Setup guide** in the header (it opens
-automatically on your first visit).
+The full guide is built in: click **Setup guide…** in the menu bar or in the
+task pane (it opens automatically on your first visit).
 
 1. **Pair** your computer or phone with the MH-M18 receiver in the system
    Bluetooth settings (it usually shows up as "MH-M18"; PIN `0000` if asked).
@@ -54,10 +57,10 @@ foreground; use **EXPORT WAV** to play tracks from any music player.
 
 ## Features
 
-- **Preset library** (Presets tab): 10 built-in presets — Frequency Ramp, Fast
+- **Preset library** (Presets mode): 10 built-in presets — Frequency Ramp, Fast
   Pulse, Slow Pulse, Rising / Falling / Alternating Siren, Electronic Rhythm,
   Random Lightning, Arpeggio, Test Signal — grouped and filterable by mode,
-  searchable. One-click **Play** (audition without leaving the tab) or **Edit**
+  searchable. One-click **Play** (audition without leaving the page) or **Edit**
   (opens the preset in its mode; built-ins are never modified). Save the
   current settings of any mode as your own preset, rename, duplicate, delete,
   and export/import your presets as a JSON file (validated on import).

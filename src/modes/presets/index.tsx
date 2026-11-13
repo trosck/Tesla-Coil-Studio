@@ -13,14 +13,13 @@
  * transport plays.
  */
 import { useId, useMemo, useRef, useState, useSyncExternalStore, type FormEvent } from 'react';
-import { downloadBlob, timestampedName } from '../../audio/export/renderWav';
 import { openGuide } from '../../components/shell/guideStore';
 import { Button, Icon, SegmentedControl, Select } from '../../components/ui';
 import { BUILT_IN_PRESETS, FEATURED_PRESET_IDS } from '../../presets/builtIn';
-import { MAX_DESCRIPTION_LENGTH, MAX_NAME_LENGTH, parsePresetFile, presetKey, serializePresets } from '../../presets/io';
-import { addUserPresets, deleteUserPreset, duplicatePreset, getUserPresets, saveUserPreset, subscribePresets, updateUserPreset } from '../../presets/storage';
+import { exportUserPresets, importPresetFile, type PresetFileMessage } from '../../presets/fileActions';
+import { MAX_DESCRIPTION_LENGTH, MAX_NAME_LENGTH } from '../../presets/io';
+import { deleteUserPreset, duplicatePreset, getUserPresets, saveUserPreset, subscribePresets, updateUserPreset } from '../../presets/storage';
 import type { Preset } from '../../presets/types';
-import { normalizeModeParams } from '../../studio/params';
 import { usePlayback, useStudio } from '../../studio/StudioContext';
 import { defineMode, type AnyModeDefinition, type ModeId, type ModePanelProps } from '../../studio/types';
 import { summarizePreset } from './summary';
@@ -29,7 +28,7 @@ import './presets.css';
 export type PresetsParams = Record<string, never>;
 
 type Origin = 'all' | 'builtin' | 'user';
-type Status = { kind: 'ok' | 'error'; text: string } | null;
+type Status = PresetFileMessage | null;
 
 const ORIGIN_OPTIONS = [
   { value: 'all', label: 'All' },
@@ -309,34 +308,10 @@ function PresetsPanel(_props: ModePanelProps<PresetsParams>) {
   const edit = (p: Preset) => loadPreset(p);
   const isLoaded = (p: Preset) => loadedPreset?.id === p.id && sourceModeId === p.mode;
 
-  const normalizeFor = (mode: ModeId, params: unknown): unknown => {
-    const def = modes.find((m) => m.id === mode);
-    return def && def.providesPlayable !== false ? normalizeModeParams(def, params) : undefined;
-  };
-
-  const exportUser = () => {
-    downloadBlob(serializePresets(user), timestampedName('tesla-coil-presets', 'json'), 'application/json');
-    setStatus({ kind: 'ok', text: `Exported ${user.length} preset${user.length === 1 ? '' : 's'}.` });
-  };
-
   const importFile = async (file: File) => {
-    try {
-      const { presets, invalid } = parsePresetFile(await file.text(), normalizeFor);
-      const existing = new Set(user.map(presetKey));
-      const fresh = presets.filter((p) => {
-        const k = presetKey(p);
-        if (existing.has(k)) return false;
-        existing.add(k);
-        return true;
-      });
-      addUserPresets(fresh);
-      const dupes = presets.length - fresh.length;
-      const notes = [dupes > 0 && `${dupes} already present`, invalid > 0 && `${invalid} invalid skipped`].filter(Boolean).join(', ');
-      setStatus({ kind: fresh.length > 0 || dupes > 0 ? 'ok' : 'error', text: `Imported ${fresh.length} preset${fresh.length === 1 ? '' : 's'}${notes ? ` (${notes})` : ''}.` });
-      if (fresh.length > 0) setOrigin((o) => (o === 'builtin' ? 'all' : o));
-    } catch (e) {
-      setStatus({ kind: 'error', text: `Import failed: ${e instanceof Error ? e.message : String(e)}` });
-    }
+    const result = await importPresetFile(file, modes);
+    setStatus({ kind: result.kind, text: result.text });
+    if (result.added > 0) setOrigin((o) => (o === 'builtin' ? 'all' : o));
   };
 
   const playingHere = (p: Preset) => isPlaying && isLoaded(p);
@@ -389,7 +364,7 @@ function PresetsPanel(_props: ModePanelProps<PresetsParams>) {
           <Button variant="ghost" icon={<Icon name="upload" />} onClick={() => fileRef.current?.click()} title="Import presets from a JSON file">
             Import
           </Button>
-          <Button variant="ghost" icon={<Icon name="download" />} onClick={exportUser} disabled={user.length === 0} title="Download your presets as a JSON file">
+          <Button variant="ghost" icon={<Icon name="download" />} onClick={() => setStatus(exportUserPresets())} disabled={user.length === 0} title="Download your presets as a JSON file">
             Export{user.length > 0 ? ` (${user.length})` : ''}
           </Button>
           <input

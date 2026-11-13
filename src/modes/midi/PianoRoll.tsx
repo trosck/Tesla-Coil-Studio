@@ -60,7 +60,7 @@ function drawStatic(ctx: CanvasRenderingContext2D, p: PianoRollProps, w: number,
     grid: cssVar('--border', '#c9c4ae'),
     text: cssVar('--text-faint', '#6b7890'),
     dim: cssVar('--mode-midi-1', '#b8c4d6'),
-    hot: cssVar('--mode-midi-2', '#56667f'),
+    hot: cssVar('--blue', '#1a62d6'),
     mark: cssVar('--select-bg', '#316ac5'),
   };
   ctx.fillStyle = colors.bg;

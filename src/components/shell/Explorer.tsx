@@ -1,11 +1,11 @@
 import { useRef, useState, useSyncExternalStore } from 'react';
 import { BUILT_IN_PRESETS } from '../../presets/builtIn';
+import { exportUserPresets, importPresetFile, type PresetFileMessage } from '../../presets/fileActions';
 import { getUserPresets, subscribePresets } from '../../presets/storage';
 import { ModeHost } from '../../studio/ModeHost';
 import { usePlayback, useStudio } from '../../studio/StudioContext';
 import { WAVE_NAME } from '../visualizer/Readouts';
 import { PxFolder, PxSave } from './icons';
-import { exportUserPresets, importPresetFile, type ActionResult } from './presetFileActions';
 import { SavePresetDialog } from './SavePresetDialog';
 import { panelId, tabId } from './TaskPane';
 
@@ -17,7 +17,7 @@ export function Explorer() {
   const waveform = usePlayback((s) => s.waveform);
   const duty = usePlayback((s) => Math.round(s.duty * 100));
   const [saveOpen, setSaveOpen] = useState(false);
-  const [message, setMessage] = useState<ActionResult | null>(null);
+  const [message, setMessage] = useState<PresetFileMessage | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const active = modes.find((m) => m.id === activeModeId) ?? modes[0]!;

@@ -1,4 +1,4 @@
-/** Open/close state of the Setup guide (shared by the header, the Presets tab and App). */
+/** Open/close state of the Setup guide (opened from the menu bar, task pane, desktop icon and Presets mode; rendered by App). */
 import { readJson, writeJson } from '../../lib/persist';
 import { createStore } from '../../lib/store';
 
