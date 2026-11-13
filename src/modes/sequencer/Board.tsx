@@ -1,11 +1,11 @@
 /**
- * Pitch-roll grid + per-step lanes (velocity, length, rest). Columns are
+ * Pitch-roll grid + per-step lanes (velocity, length, mute). Columns are
  * memoized per step, so editing one step (or a velocity drag) only re-renders
  * that column; the playhead is a separate overlay.
  */
 import { memo, useEffect, useRef, type CSSProperties, type KeyboardEvent, type PointerEvent } from 'react';
 import { midiToNoteName } from '../../audio/music';
-import { LENGTH_MAX, LENGTH_MIN, type SeqPattern, type SeqStep } from './build';
+import type { SeqPattern, SeqStep, StepLength } from './build';
 
 export interface BoardRow {
   midi: number;
@@ -24,24 +24,20 @@ export interface BoardProps {
   onCell: (step: number, midi: number) => void;
   onSelect: (step: number) => void;
   onPatch: (step: number, patch: Partial<SeqStep>) => void;
-  onToggleRest: (step: number) => void;
+  onToggleMute: (step: number) => void;
 }
 
-// ---------------------------------------------------------------- length lane mapping (log)
-
-const LEN_RATIO = Math.log(LENGTH_MAX / LENGTH_MIN);
-export function lengthToFrac(len: number): number {
-  return Math.min(1, Math.max(0, Math.log(len / LENGTH_MIN) / LEN_RATIO));
-}
-export function fracToLength(f: number): number {
-  const raw = LENGTH_MIN * Math.exp(Math.min(1, Math.max(0, f)) * LEN_RATIO);
-  const snapped = raw < 1 ? Math.round(raw / 0.05) * 0.05 : Math.round(raw / 0.25) * 0.25;
-  return Math.min(LENGTH_MAX, Math.max(LENGTH_MIN, parseFloat(snapped.toFixed(2))));
-}
+// ---------------------------------------------------------------- length
 
 export function formatLength(len: number): string {
-  return Number.isInteger(len) ? String(len) : len.toFixed(2).replace(/0$/, '');
+  return len === 0.5 ? '½' : '1';
 }
+
+/** Options for a two-way ½ / 1 SegmentedControl (string-valued). */
+export const LENGTH_OPTIONS = [
+  { value: '0.5', label: '½', ariaLabel: 'Half step', title: 'Half step: articulated' },
+  { value: '1', label: '1', ariaLabel: 'Full step', title: 'Full step: ties into the next step' },
+] as const;
 
 // ---------------------------------------------------------------- column
 
@@ -55,10 +51,10 @@ interface ColumnProps {
   focusRow: number;
   onCell: (step: number, midi: number) => void;
   onSelect: (step: number) => void;
-  onToggleRest: (step: number) => void;
+  onToggleMute: (step: number) => void;
 }
 
-const Column = memo(function Column({ index, step, rows, lowMidi, highMidi, selected, focusRow, onCell, onSelect, onToggleRest }: ColumnProps) {
+const Column = memo(function Column({ index, step, rows, lowMidi, highMidi, selected, focusRow, onCell, onSelect, onToggleMute }: ColumnProps) {
   const above = step.on && step.midi > highMidi;
   const below = step.on && step.midi < lowMidi;
   const name = midiToNoteName(step.midi);
@@ -68,6 +64,7 @@ const Column = memo(function Column({ index, step, rows, lowMidi, highMidi, sele
     index % 16 === 0 && 'mode-sequencer__col--bar',
     Math.floor(index / 4) % 2 === 1 && 'mode-sequencer__col--shade',
     selected && 'mode-sequencer__col--selected',
+    step.muted && 'mode-sequencer__col--muted',
   ]
     .filter(Boolean)
     .join(' ');
@@ -125,21 +122,21 @@ const Column = memo(function Column({ index, step, rows, lowMidi, highMidi, sele
         className={['mode-sequencer__lane', 'mode-sequencer__lane--len', !step.on && 'mode-sequencer__lane--rest'].filter(Boolean).join(' ')}
         data-lane="length"
         data-col={index}
-        title={`Length ${formatLength(step.length)} steps`}
+        title={`Length ${formatLength(step.length)} step (click to toggle ½ / 1, drag to paint)`}
       >
-        <span className="mode-sequencer__bar" style={{ height: `${lengthToFrac(step.length) * 100}%` }} />
+        <span className="mode-sequencer__bar" style={{ height: step.length === 0.5 ? '50%' : '100%' }} />
         <span className="mode-sequencer__lenval">{formatLength(step.length)}</span>
       </div>
       <button
         type="button"
         tabIndex={-1}
-        className={['mode-sequencer__rest', step.on && 'mode-sequencer__rest--on'].filter(Boolean).join(' ')}
-        aria-pressed={step.on}
-        aria-label={`Step ${index + 1} ${step.on ? 'note' : 'rest'} (toggle)`}
-        title={step.on ? 'Note (click for rest)' : 'Rest (click for note)'}
-        onClick={() => onToggleRest(index)}
+        className={['mode-sequencer__rest', !step.muted && 'mode-sequencer__rest--on'].filter(Boolean).join(' ')}
+        aria-pressed={!step.muted}
+        aria-label={step.muted ? `Step ${index + 1} muted (click to unmute)` : `Step ${index + 1} playing (click to mute)`}
+        title={step.muted ? `Step ${index + 1} muted (click to unmute)` : `Step ${index + 1} playing (click to mute)`}
+        onClick={() => onToggleMute(index)}
       >
-        {step.on ? '●' : '–'}
+        {step.muted ? '–' : '●'}
       </button>
     </div>
   );
@@ -147,10 +144,12 @@ const Column = memo(function Column({ index, step, rows, lowMidi, highMidi, sele
 
 // ---------------------------------------------------------------- board
 
-export const Board = memo(function Board({ pattern, rows, lowMidi, highMidi, selected, playStep, onCell, onSelect, onPatch, onToggleRest }: BoardProps) {
+export const Board = memo(function Board({ pattern, rows, lowMidi, highMidi, selected, playStep, onCell, onSelect, onPatch, onToggleMute }: BoardProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const colsRef = useRef<HTMLDivElement>(null);
-  const drag = useRef<{ lane: 'velocity' | 'length'; top: number; height: number; pointer: number } | null>(null);
+  const drag = useRef<
+    { lane: 'velocity'; top: number; height: number; pointer: number } | { lane: 'length'; value: StepLength; pointer: number } | null
+  >(null);
   const steps = pattern.steps;
   // Single tab stop: the selected step's note row (or the top row).
   const focusCol = selected !== null && selected < steps ? selected : 0;
@@ -182,19 +181,29 @@ export const Board = memo(function Board({ pattern, rows, lowMidi, highMidi, sel
     if (!d) return;
     const col = colAt(clientX);
     if (col < 0) return;
+    if (d.lane === 'length') {
+      // Paint the value chosen on pointer down; skip columns that already have it.
+      if (pattern.notes[col]?.length !== d.value) onPatch(col, { length: d.value });
+      return;
+    }
     const f = Math.min(1, Math.max(0, 1 - (clientY - d.top) / d.height));
-    if (d.lane === 'velocity') onPatch(col, { velocity: Math.round(f * 100) / 100 });
-    else onPatch(col, { length: fracToLength(f) });
+    onPatch(col, { velocity: Math.round(f * 100) / 100 });
   };
 
   const onPointerDown = (e: PointerEvent<HTMLDivElement>) => {
     const lane = (e.target as HTMLElement).closest<HTMLElement>('[data-lane]');
     if (!lane || e.button !== 0) return;
-    const rect = lane.getBoundingClientRect();
-    drag.current = { lane: lane.dataset.lane === 'length' ? 'length' : 'velocity', top: rect.top, height: rect.height || 1, pointer: e.pointerId };
+    const col = Number(lane.dataset.col);
+    if (lane.dataset.lane === 'length') {
+      // Click toggles this step ½ ↔ 1; dragging paints that value onto other columns.
+      const cur = Number.isFinite(col) ? pattern.notes[col]?.length : undefined;
+      drag.current = { lane: 'length', value: cur === 0.5 ? 1 : 0.5, pointer: e.pointerId };
+    } else {
+      const rect = lane.getBoundingClientRect();
+      drag.current = { lane: 'velocity', top: rect.top, height: rect.height || 1, pointer: e.pointerId };
+    }
     e.currentTarget.setPointerCapture(e.pointerId);
     e.preventDefault();
-    const col = Number(lane.dataset.col);
     if (Number.isFinite(col)) onSelect(col);
     applyDrag(e.clientX, e.clientY);
   };
@@ -266,7 +275,7 @@ export const Board = memo(function Board({ pattern, rows, lowMidi, highMidi, sel
               focusRow={i === focusCol ? focusRow : -1}
               onCell={onCell}
               onSelect={onSelect}
-              onToggleRest={onToggleRest}
+              onToggleMute={onToggleMute}
             />
           ))}
           {playStep >= 0 && playStep < steps && (

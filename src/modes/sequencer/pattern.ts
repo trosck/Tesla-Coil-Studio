@@ -2,7 +2,7 @@
  * Pure pattern editing helpers (immutable updates). Unit-tested in pattern.test.ts.
  */
 import { createRng, quantizeMidi, scaleNotesInRange, type Rng, type Scale } from '../../audio/music';
-import { LENGTH_MAX, LENGTH_MIN, MAX_STEPS, MIDI_MAX, MIDI_MIN, clonePattern, emptyPattern, type SeqPattern, type SeqStep, type StepCount } from './build';
+import { MAX_STEPS, MIDI_MAX, MIDI_MIN, clonePattern, emptyPattern, snapLength, type SeqPattern, type SeqStep, type StepCount } from './build';
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 
@@ -12,7 +12,8 @@ export function updateStep(p: SeqPattern, i: number, patch: Partial<SeqStep>): S
   const cur = notes[i]!;
   const next: SeqStep = { ...cur, ...patch };
   next.midi = clamp(Math.round(next.midi), MIDI_MIN, MIDI_MAX);
-  next.length = clamp(next.length, LENGTH_MIN, LENGTH_MAX);
+  next.length = snapLength(next.length);
+  next.muted = !!next.muted;
   next.velocity = clamp(next.velocity, 0, 1);
   notes[i] = next;
   return { ...p, notes };
@@ -21,13 +22,14 @@ export function updateStep(p: SeqPattern, i: number, patch: Partial<SeqStep>): S
 /**
  * Grid click: a different pitch (or a rest) sets the note and turns it on;
  * clicking the active note toggles it to a rest. A rest step that is turned on
- * gets the default gate as its length.
+ * gets the default gate as its length. Clicking in a muted column unmutes it
+ * (the same pitch is kept, not removed).
  */
 export function clickCell(p: SeqPattern, i: number, midi: number, defaultGate: number): SeqPattern {
   const st = p.notes[i];
   if (!st) return p;
-  if (st.on && st.midi === midi) return updateStep(p, i, { on: false });
-  return updateStep(p, i, { on: true, midi, length: st.on ? st.length : defaultGate });
+  if (st.on && !st.muted && st.midi === midi) return updateStep(p, i, { on: false });
+  return updateStep(p, i, { on: true, muted: false, midi, length: st.on ? st.length : snapLength(defaultGate) });
 }
 
 /** Toggle rest/note without changing the stored pitch. */
@@ -35,6 +37,13 @@ export function toggleRest(p: SeqPattern, i: number): SeqPattern {
   const st = p.notes[i];
   if (!st) return p;
   return updateStep(p, i, { on: !st.on });
+}
+
+/** Mute/unmute a column: the note data is kept, a muted step is not played. */
+export function toggleMute(p: SeqPattern, i: number): SeqPattern {
+  const st = p.notes[i];
+  if (!st) return p;
+  return updateStep(p, i, { muted: !st.muted });
 }
 
 /**
@@ -66,17 +75,18 @@ export function snapPatternToScale(p: SeqPattern, scale: Scale): SeqPattern {
 
 /** Set the length of every note in the played range. */
 export function applyGateToAll(p: SeqPattern, gate: number): SeqPattern {
-  return { ...p, notes: p.notes.map((s, i) => (i < p.steps && s.on ? { ...s, length: clamp(gate, LENGTH_MIN, LENGTH_MAX) } : { ...s })) };
+  const length = snapLength(gate);
+  return { ...p, notes: p.notes.map((s, i) => (i < p.steps && s.on ? { ...s, length } : { ...s })) };
 }
 
 export function clearPattern(p: SeqPattern, midi: number, gate: number): SeqPattern {
-  return emptyPattern(p.steps, midi, gate);
+  return emptyPattern(p.steps, midi, snapLength(gate));
 }
 
-/** Does step i sound into step i+1 (tie / slide / hold)? */
+/** Does step i sound into step i+1 (tie)? Muted steps never do. */
 export function isTiedToNext(p: SeqPattern, i: number): boolean {
   const st = p.notes[i];
-  return !!st && st.on && st.length >= 1 - 1e-9 && i < p.steps - 1;
+  return !!st && st.on && !st.muted && st.length >= 1 && i < p.steps - 1;
 }
 
 export interface RandomizeOptions {
@@ -85,14 +95,15 @@ export interface RandomizeOptions {
   highMidi: number;
   /** 0..1 */
   density: number;
+  /** Length of every placed note (snapped to 0.5 or 1). */
   gate: number;
   rng?: Rng;
 }
 
 /**
  * Musical, scale-aware random pattern: downbeats are favored, pitches move by
- * small scale steps around the root with occasional octave jumps, beats get
- * accents and some notes are held over the following rest.
+ * small scale steps around the root with occasional octave jumps and beats get
+ * accents. Every note gets the gate as its length.
  */
 export function randomizePattern(p: SeqPattern, o: RandomizeOptions): SeqPattern {
   const rng = o.rng ?? createRng((Date.now() ^ Math.floor(Math.random() * 0x7fffffff)) >>> 0);
@@ -103,7 +114,8 @@ export function randomizePattern(p: SeqPattern, o: RandomizeOptions): SeqPattern
   const rootIdx = notesPool.findIndex((m) => ((m % 12) + 12) % 12 === o.scale.root);
   const home = rootIdx >= 0 ? rootIdx : 0;
   let idx = home;
-  const out = emptyPattern(p.steps, notesPool[home]!, o.gate);
+  const gate = snapLength(o.gate);
+  const out = emptyPattern(p.steps, notesPool[home]!, gate);
   // Preserve hidden data beyond the played range.
   for (let i = p.steps; i < MAX_STEPS; i++) out.notes[i] = { ...p.notes[i]! };
 
@@ -124,18 +136,7 @@ export function randomizePattern(p: SeqPattern, o: RandomizeOptions): SeqPattern
     if (idx >= n) idx = Math.max(0, 2 * (n - 1) - idx);
     idx = clamp(idx, 0, n - 1);
     const velocity = beat ? rng.range(0.88, 1) : eighth ? rng.range(0.7, 0.85) : rng.range(0.55, 0.75);
-    let length = clamp(o.gate, LENGTH_MIN, 1);
-    // Occasionally hold over a following rest.
-    if (rng.chance(0.15)) length = rng.pick([1.5, 2]);
-    out.notes[i] = { on: true, midi: notesPool[idx]!, velocity: Math.round(velocity * 100) / 100, length };
-  }
-  // Held notes should only hold over rests (not slur into the next hit by accident).
-  for (let i = 0; i < p.steps; i++) {
-    const st = out.notes[i]!;
-    if (!st.on || st.length < 1) continue;
-    let free = 0;
-    for (let j = i + 1; j < p.steps && !out.notes[j]!.on && free < 4; j++) free++;
-    st.length = free === 0 ? clamp(o.gate, LENGTH_MIN, 1) : Math.min(st.length, free + clamp(o.gate, LENGTH_MIN, 1));
+    out.notes[i] = { on: true, muted: false, midi: notesPool[idx]!, velocity: Math.round(velocity * 100) / 100, length: gate };
   }
   return out;
 }

@@ -5,15 +5,13 @@
  */
 import { useCallback, useMemo, useState } from 'react';
 import { NOTE_NAMES_SHARP, SCALES, SCALE_LIST, isInScale, midiToNoteName, scaleNotesInRange, type ScaleId } from '../../audio/music';
-import { Button, Panel, SegmentedControl, Select, Slider, Toggle } from '../../components/ui';
+import { Button, Field, Panel, SegmentedControl, Select, Slider, Toggle } from '../../components/ui';
 import { usePlayback, useStudio } from '../../studio/StudioContext';
 import { defineMode, type ModePanelProps } from '../../studio/types';
-import { Board, type BoardRow } from './Board';
+import { Board, LENGTH_OPTIONS, type BoardRow } from './Board';
 import {
   BPM_MAX,
   BPM_MIN,
-  GATE_MAX,
-  GATE_MIN,
   OCTAVE_MAX,
   OCTAVE_MIN,
   SLOT_NAMES,
@@ -34,9 +32,10 @@ import {
   type SeqStep,
   type SequencerParams,
   type StepCount,
+  type StepLength,
 } from './build';
 import { Inspector } from './Inspector';
-import { applyGateToAll, clearPattern, clickCell, randomizePattern, setStepCount, snapPatternToScale, toggleRest, transposePattern, updateStep } from './pattern';
+import { applyGateToAll, clearPattern, clickCell, randomizePattern, setStepCount, snapPatternToScale, toggleMute, transposePattern, updateStep } from './pattern';
 import './sequencer.css';
 
 const ROOT_OPTIONS = NOTE_NAMES_SHARP.map((n, i) => ({ value: String(i), label: n }));
@@ -107,10 +106,10 @@ function SequencerPanel({ params, setParams }: ModePanelProps<SequencerParams>) 
     [editPattern],
   );
   const onPatch = useCallback((i: number, patch: Partial<SeqStep>) => editPattern((pat) => updateStep(pat, i, patch)), [editPattern]);
-  const onToggleRest = useCallback(
+  const onToggleMute = useCallback(
     (i: number) => {
       setSelected(i);
-      editPattern((pat) => toggleRest(pat, i));
+      editPattern((pat) => toggleMute(pat, i));
     },
     [editPattern],
   );
@@ -193,10 +192,11 @@ function SequencerPanel({ params, setParams }: ModePanelProps<SequencerParams>) 
             onCell={onCell}
             onSelect={onSelect}
             onPatch={onPatch}
-            onToggleRest={onToggleRest}
+            onToggleMute={onToggleMute}
           />
           <p className="mode-sequencer__tip">
-            Click a cell to place a note, click it again for a rest. Drag the Vel / Len lanes to paint. Length ≥ 1 step ties into the next step.
+            Click a cell to place a note, click it again for a rest. Drag the Vel lane to paint velocity. Click a Len cell to toggle ½ / 1 step, drag
+            across to paint; length 1 ties into the next step. On mutes a step without deleting its note.
           </p>
         </Panel>
 
@@ -242,16 +242,14 @@ function SequencerPanel({ params, setParams }: ModePanelProps<SequencerParams>) 
               onChange={(v) => set('swing', v / 100)}
               hint="Delays every off-beat 16th."
             />
-            <Slider
-              label="Gate (new notes)"
-              value={params.gate}
-              min={GATE_MIN}
-              max={GATE_MAX}
-              step={0.05}
-              unit="step"
-              onChange={(v) => set('gate', v)}
-              hint="Below 1 step = articulated repeats."
-            />
+            <Field label="Gate (new notes)" hint="½ step = articulated repeats; 1 step ties into the next.">
+              <SegmentedControl
+                aria-label="Gate for new notes"
+                value={String(params.gate) as '0.5' | '1'}
+                options={LENGTH_OPTIONS}
+                onChange={(v) => set('gate', Number(v) as StepLength)}
+              />
+            </Field>
             <Button size="sm" onClick={() => editPattern((pat, p) => applyGateToAll(pat, p.gate))}>
               Apply gate to all notes
             </Button>

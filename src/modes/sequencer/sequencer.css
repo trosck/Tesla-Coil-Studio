@@ -338,8 +338,15 @@
   background: linear-gradient(var(--mode-sequencer-1), var(--mode-sequencer-2));
   pointer-events: none;
 }
+.mode-sequencer__lane--len {
+  cursor: pointer;
+}
 .mode-sequencer__lane--len .mode-sequencer__bar {
   background: var(--gel-blue);
+  transition: height var(--dur) var(--ease);
+}
+.mode-sequencer__lane--len:hover {
+  background: var(--surface-2);
 }
 .mode-sequencer__lane--rest .mode-sequencer__bar {
   background: var(--surface-3);
@@ -349,7 +356,8 @@
   inset: 2px 0 auto;
   text-align: center;
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 11px;
+  font-weight: bold;
   color: var(--text);
   pointer-events: none;
   text-shadow: 0 0 3px var(--surface);
@@ -371,6 +379,23 @@
 }
 .mode-sequencer__rest:hover {
   background: var(--surface-2);
+}
+
+/* muted column: everything stays visible with its values, but grayed out */
+.mode-sequencer__col--muted .mode-sequencer__note,
+.mode-sequencer__col--muted .mode-sequencer__lane .mode-sequencer__bar {
+  filter: grayscale(1);
+  opacity: 0.35;
+}
+.mode-sequencer__col--muted .mode-sequencer__note {
+  border-style: dashed;
+}
+.mode-sequencer__col--muted .mode-sequencer__lenval,
+.mode-sequencer__col--muted .mode-sequencer__stepnum {
+  color: var(--text-faint);
+}
+.mode-sequencer__col--muted .mode-sequencer__rest {
+  background: var(--surface-3);
 }
 
 /* playhead */

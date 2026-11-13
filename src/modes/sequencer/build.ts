@@ -14,13 +14,23 @@ export interface SeqStep {
   /** MIDI note number (kept even while the step is a rest). */
   midi: number;
   /**
-   * Gate length in steps (0.1..4). < 1 = articulated note; >= 1 reaches the
-   * next step: if that step plays a note it is a legato tie/slide, if it is a
-   * rest the note is held over it.
+   * Gate length in steps, only 0.5 or 1. 0.5 = articulated note; 1 reaches the
+   * next step (legato tie if that step plays a note).
    */
-  length: number;
+  length: StepLength;
+  /** true = column muted: kept and visible but not played. */
+  muted: boolean;
   /** 0..1, used directly as the event gain. */
   velocity: number;
+}
+
+export const STEP_LENGTHS = [0.5, 1] as const;
+export type StepLength = (typeof STEP_LENGTHS)[number];
+
+/** Snap any value to an allowed step length (non-finite -> 1). */
+export function snapLength(v: number): StepLength {
+  if (!Number.isFinite(v)) return 1;
+  return v < 0.75 ? 0.5 : 1;
 }
 
 export const STEP_COUNTS = [4, 8, 16, 32] as const;
@@ -47,8 +57,8 @@ export interface SequencerParams {
   bpm: number;
   /** 0..0.75: every off-beat 16th (odd step) is delayed by swing * step. */
   swing: number;
-  /** Default length (in steps, 0.1..1) for newly placed notes. */
-  gate: number;
+  /** Default length (in steps, 0.5 or 1) for newly placed notes. */
+  gate: StepLength;
   /** Key root pitch class 0..11 (0 = C). Overrides the root of `scale`. */
   root: number;
   /** Scale shape (intervals) used for the grid rows and randomization. */
@@ -79,10 +89,6 @@ export const STEPS_PER_BEAT = 4;
 export const BPM_MIN = 30;
 export const BPM_MAX = 300;
 export const SWING_MAX = 0.75;
-export const LENGTH_MIN = 0.1;
-export const LENGTH_MAX = 4;
-export const GATE_MIN = 0.1;
-export const GATE_MAX = 1;
 export const MIDI_MIN = 12; // C0
 export const MIDI_MAX = 108; // C8
 export const OCTAVE_MIN = 0;
@@ -90,21 +96,21 @@ export const OCTAVE_MAX = 7;
 
 // ---------------------------------------------------------------- defaults
 
-export function restStep(midi = 57, length = 0.5): SeqStep {
-  return { on: false, midi, length, velocity: 0.8 };
+export function restStep(midi = 57, length: StepLength = 1): SeqStep {
+  return { on: false, muted: false, midi, length, velocity: 0.8 };
 }
 
-export function emptyPattern(steps: StepCount = 16, midi = 57, length = 0.5): SeqPattern {
+export function emptyPattern(steps: StepCount = 16, midi = 57, length: StepLength = 1): SeqPattern {
   return { steps, notes: Array.from({ length: MAX_STEPS }, () => restStep(midi, length)) };
 }
 
-/** [midi, velocity, length] or null for a rest. */
+/** [midi, velocity, length] or null for a rest (length is snapped). */
 type Cell = readonly [number, number, number] | null;
 
 function patternFrom(cells: readonly Cell[], steps: StepCount = 16): SeqPattern {
   const p = emptyPattern(steps);
   cells.forEach((c, i) => {
-    if (c) p.notes[i] = { on: true, midi: c[0], velocity: c[1], length: c[2] };
+    if (c) p.notes[i] = { on: true, muted: false, midi: c[0], velocity: c[1], length: snapLength(c[2]) };
   });
   return p;
 }
@@ -127,7 +133,7 @@ const DEFAULT_B: Cell[] = [
 export const defaultSequencerParams: SequencerParams = {
   bpm: 128,
   swing: 0,
-  gate: 0.5,
+  gate: 1,
   root: 9,
   scale: 'a-minor',
   octave: 3,
@@ -153,7 +159,8 @@ export function normalizeStep(raw: unknown, fallback: SeqStep): SeqStep {
   return {
     on: typeof raw.on === 'boolean' ? raw.on : fallback.on,
     midi: int(raw.midi, fallback.midi, MIDI_MIN, MIDI_MAX),
-    length: num(raw.length, fallback.length, LENGTH_MIN, LENGTH_MAX),
+    muted: typeof raw.muted === 'boolean' ? raw.muted : false,
+    length: finite(raw.length) ? snapLength(raw.length) : fallback.length,
     velocity: num(raw.velocity, fallback.velocity, 0, 1),
   };
 }
@@ -187,7 +194,7 @@ export function normalizeSequencerParams(raw: unknown): SequencerParams {
   return {
     bpm: num(r.bpm, d.bpm, BPM_MIN, BPM_MAX),
     swing: num(r.swing, d.swing, 0, SWING_MAX),
-    gate: num(r.gate, d.gate, GATE_MIN, GATE_MAX),
+    gate: finite(r.gate) ? snapLength(r.gate) : d.gate,
     root: finite(r.root) ? ((Math.round(r.root) % 12) + 12) % 12 : d.root,
     scale: isScaleId(r.scale) ? r.scale : d.scale,
     octave: int(r.octave, d.octave, OCTAVE_MIN, OCTAVE_MAX),
@@ -271,7 +278,7 @@ export function buildPatternSequence(pattern: SeqPattern, bpm: number, swing: nu
   const events: ToneEvent[] = [];
   for (let i = 0; i < pattern.steps; i++) {
     const st = pattern.notes[i];
-    if (!st || !st.on || !(st.velocity > 0)) continue;
+    if (!st || !st.on || st.muted || !(st.velocity > 0)) continue;
     const time = stepTime(i, bpm, swing);
     // Notes never ring past the loop end, so the loop restarts cleanly.
     const duration = Math.min(st.length * s, length - time);

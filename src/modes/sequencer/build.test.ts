@@ -11,20 +11,37 @@ import {
   emptyPattern,
   normalizeSequencerParams,
   patternSeconds,
+  normalizeStep,
+  restStep,
   seqStepSeconds,
   slotForChunk,
+  snapLength,
   stepAtPosition,
   stepTime,
   type SeqPattern,
   type SequencerParams,
   type StepCount,
+  type StepLength,
 } from './build';
 
-function pattern(cells: Array<[number, number, number, number]>, steps: StepCount = 16): SeqPattern {
+function pattern(cells: Array<[number, number, StepLength, number]>, steps: StepCount = 16): SeqPattern {
   const p = emptyPattern(steps);
-  for (const [i, midi, length, velocity] of cells) p.notes[i] = { on: true, midi, length, velocity };
+  for (const [i, midi, length, velocity] of cells) p.notes[i] = { on: true, muted: false, midi, length, velocity };
   return p;
 }
+
+describe('snapLength', () => {
+  it('snaps to 0.5 or 1', () => {
+    expect(snapLength(0)).toBe(0.5);
+    expect(snapLength(0.4)).toBe(0.5);
+    expect(snapLength(0.74)).toBe(0.5);
+    expect(snapLength(0.75)).toBe(1);
+    expect(snapLength(1.75)).toBe(1);
+    expect(snapLength(4)).toBe(1);
+    expect(snapLength(NaN)).toBe(1);
+    expect(snapLength(Infinity)).toBe(1);
+  });
+});
 
 const SR = 44100;
 
@@ -52,13 +69,21 @@ describe('sequencer timing', () => {
     expect(stepTime(6, 120, 0.75)).toBeCloseTo(6 * 0.125, 12);
   });
 
-  it('lengths map to gate durations, ties can span steps, never past the loop end', () => {
-    const p = pattern([[0, 60, 0.25, 1], [2, 60, 2, 1], [15, 60, 4, 1]]);
+  it('lengths map to gate durations, never past the loop end', () => {
+    const p = pattern([[0, 60, 0.5, 1], [2, 60, 1, 1], [15, 60, 1, 1]]);
     const seq = buildPatternSequence(p, 120, 0);
-    expect(seq.events[0]!.duration).toBeCloseTo(0.25 * 0.125, 12);
-    expect(seq.events[1]!.duration).toBeCloseTo(0.25, 12);
+    expect(seq.events[0]!.duration).toBeCloseTo(0.5 * 0.125, 12);
+    expect(seq.events[1]!.duration).toBeCloseTo(0.125, 12);
     const last = seq.events[2]!;
     expect(last.time + last.duration).toBeCloseTo(seq.length, 12);
+  });
+
+  it('muted steps are skipped; a length-1 note before a muted step plays its full step', () => {
+    const p = pattern([[0, 60, 1, 1], [1, 62, 1, 1], [2, 64, 0.5, 1]]);
+    p.notes[1]!.muted = true;
+    const seq = buildPatternSequence(p, 120, 0);
+    expect(seq.events.map((e) => e.step)).toEqual([0, 2]);
+    expect(seq.events[0]!.duration).toBeCloseTo(0.125, 12);
   });
 
   it('a length-1 note touches the next note (legato tie); default gate articulates', () => {
@@ -70,7 +95,7 @@ describe('sequencer timing', () => {
 
   it('velocity becomes gain, rests and zero velocity produce no event', () => {
     const p = pattern([[0, 60, 0.5, 0.3], [1, 60, 0.5, 0], [2, 60, 0.5, 1]]);
-    p.notes[3] = { on: false, midi: 60, length: 0.5, velocity: 1 };
+    p.notes[3] = { on: false, muted: false, midi: 60, length: 0.5, velocity: 1 };
     const seq = buildPatternSequence(p, 120, 0);
     expect(seq.events.map((e) => e.gain)).toEqual([0.3, 1]);
     expect(seq.events.map((e) => e.step)).toEqual([0, 2]);
@@ -212,7 +237,7 @@ describe('normalizeSequencerParams', () => {
     const p0 = n.patterns[0]!;
     expect(p0.steps).toBe(32);
     expect(p0.notes).toHaveLength(MAX_STEPS);
-    expect(p0.notes[0]).toEqual({ on: true, midi: 108, length: 4, velocity: 1 });
+    expect(p0.notes[0]).toEqual({ on: true, muted: false, midi: 108, length: 1, velocity: 1 });
     expect(p0.notes[1]!.on).toBe(false);
     expect(p0.notes[2]!.on).toBe(false);
     expect(p0.notes[2]!.midi).toBe(61);
@@ -220,6 +245,18 @@ describe('normalizeSequencerParams', () => {
     expect(n.patterns[1]!.steps).toBe(16);
     // builds without throwing
     expect(buildSequencer(n)).not.toBeNull();
+  });
+  it('normalizes muted (default false) and snaps lengths', () => {
+    const fb = restStep();
+    expect(normalizeStep({ on: true, midi: 60 }, fb).muted).toBe(false);
+    expect(normalizeStep({ muted: 'yes' }, fb).muted).toBe(false);
+    expect(normalizeStep({ muted: true }, fb).muted).toBe(true);
+    expect(normalizeStep({ length: 0.3 }, fb).length).toBe(0.5);
+    expect(normalizeStep({ length: 'x' }, fb).length).toBe(fb.length);
+    expect(normalizeSequencerParams({ gate: 0.25 }).gate).toBe(0.5);
+    expect(normalizeSequencerParams({ gate: 'x' }).gate).toBe(1);
+    const lens = defaultSequencerParams.patterns.flatMap((p) => p.notes.map((s) => s.length));
+    expect(lens.every((l) => l === 0.5 || l === 1)).toBe(true);
   });
   it('accepts 4/8/16/32 step counts and rejects others', () => {
     const steps = (v: unknown) => normalizeSequencerParams({ patterns: [{ steps: v }] }).patterns[0]!.steps;

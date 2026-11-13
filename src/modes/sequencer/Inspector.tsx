@@ -1,9 +1,9 @@
-/** Precise editor for the selected step: pitch, length, velocity, rest, preview. */
+/** Precise editor for the selected step: pitch, length, velocity, rest, mute, preview. */
 import { midiToFreq, midiToNoteName, quantizeMidi, type Scale } from '../../audio/music';
-import { Button, Panel, Select, Slider, Toggle } from '../../components/ui';
+import { Button, Field, Panel, SegmentedControl, Select, Slider, Toggle } from '../../components/ui';
 import { useStudio } from '../../studio/StudioContext';
-import { LENGTH_MAX, LENGTH_MIN, MIDI_MAX, MIDI_MIN, type SeqStep } from './build';
-import { formatLength } from './Board';
+import { MIDI_MAX, MIDI_MIN, type SeqStep, type StepLength } from './build';
+import { LENGTH_OPTIONS } from './Board';
 
 const NOTE_OPTIONS = Array.from({ length: MIDI_MAX - MIDI_MIN + 1 }, (_, i) => {
   const m = MIDI_MAX - i;
@@ -47,6 +47,7 @@ export function Inspector({ index, step, steps, scale, onPatch, onSelect }: Insp
     >
       <div className="mode-sequencer__insp">
         <Toggle checked={step.on} onChange={(on) => onPatch({ on })} label={step.on ? 'Note' : 'Rest'} />
+        <Toggle checked={step.muted} onChange={(muted) => onPatch({ muted })} label="Muted" />
         <Select label="Pitch" value={String(step.midi)} options={NOTE_OPTIONS} onChange={(v) => setMidi(Number(v))} />
         <div className="mode-sequencer__pitch-btns" role="group" aria-label="Pitch nudge">
           <Button size="sm" onClick={() => setMidi(step.midi - 12)} title="Octave down">
@@ -68,16 +69,14 @@ export function Inspector({ index, step, steps, scale, onPatch, onSelect }: Insp
             +Oct
           </Button>
         </div>
-        <Slider
-          label="Length"
-          value={step.length}
-          min={LENGTH_MIN}
-          max={LENGTH_MAX}
-          step={0.05}
-          unit="steps"
-          onChange={(length) => onPatch({ length })}
-          hint={step.length >= 1 ? `Holds / ties over ${formatLength(step.length)} steps.` : 'Articulated (gap before the next step).'}
-        />
+        <Field label="Length" hint={step.length === 1 ? 'Ties into the next step.' : 'Articulated (gap before the next step).'}>
+          <SegmentedControl
+            aria-label="Step length"
+            value={String(step.length) as '0.5' | '1'}
+            options={LENGTH_OPTIONS}
+            onChange={(v) => onPatch({ length: Number(v) as StepLength })}
+          />
+        </Field>
         <Slider label="Velocity" value={Math.round(step.velocity * 100)} min={0} max={100} step={1} unit="%" onChange={(v) => onPatch({ velocity: v / 100 })} />
         <Button
           onPointerDown={previewOn}

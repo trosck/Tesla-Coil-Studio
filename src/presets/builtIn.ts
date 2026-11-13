@@ -12,7 +12,7 @@ import type { MelodyNote, MelodyParams } from '../modes/melody/build';
 import { defaultPulseParams, type PulseParams } from '../modes/pulse/build';
 import type { RampParams } from '../modes/ramp/build';
 import type { RandomParams } from '../modes/random/build';
-import { emptyPattern, type SeqPattern, type SequencerParams } from '../modes/sequencer/build';
+import { emptyPattern, snapLength, type SeqPattern, type SequencerParams } from '../modes/sequencer/build';
 import type { SirenParams } from '../modes/siren/build';
 import type { ModeId } from '../studio/types';
 import type { Preset } from './types';
@@ -37,7 +37,7 @@ function preset<M extends keyof ParamsByMode & ModeId>(mode: M, id: `builtin-${s
 function pattern(cells: readonly ([number, number, number] | null)[]): SeqPattern {
   const p = emptyPattern(16);
   cells.forEach((c, i) => {
-    if (c) p.notes[i] = { on: true, midi: c[0], velocity: c[1], length: c[2] };
+    if (c) p.notes[i] = { on: true, muted: false, midi: c[0], velocity: c[1], length: snapLength(c[2]) };
   });
   return p;
 }
@@ -138,7 +138,7 @@ export const BUILT_IN_PRESETS: readonly Preset[] = [
   preset('sequencer', 'builtin-electronic-rhythm', 'Electronic Rhythm', 'One-bar A minor bass riff at 132 BPM in pattern A, with a second bar in B (turn on Chain to play A → B), 110–330 Hz.', {
     bpm: 132,
     swing: 0.08,
-    gate: 0.45,
+    gate: 1,
     root: 9,
     scale: 'a-minor',
     octave: 2,
