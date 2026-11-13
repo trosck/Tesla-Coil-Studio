@@ -1,5 +1,5 @@
 /**
- * Sequencer mode: monophonic 16/32-step pitch-roll sequencer with 4 pattern
+ * Sequencer mode: monophonic 4/8/16/32-step pitch-roll sequencer with 4 pattern
  * slots, swing, per-step velocity/length, randomizer and chain playback.
  * Pure logic lives in build.ts / pattern.ts.
  */
@@ -47,6 +47,8 @@ const RANGE_OPTIONS = [
   { value: '3', label: '3 oct' },
 ] as const;
 const STEP_OPTIONS = [
+  { value: '4', label: '4 steps' },
+  { value: '8', label: '8 steps' },
   { value: '16', label: '16 steps' },
   { value: '32', label: '32 steps' },
 ] as const;
@@ -166,7 +168,7 @@ function SequencerPanel({ params, setParams }: ModePanelProps<SequencerParams>) 
         </div>
         <SegmentedControl
           aria-label="Pattern length"
-          value={String(pattern.steps) as '16' | '32'}
+          value={String(pattern.steps)}
           options={STEP_OPTIONS}
           onChange={(v) => {
             const steps = Number(v) as StepCount;

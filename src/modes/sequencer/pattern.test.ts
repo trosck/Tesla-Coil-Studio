@@ -20,18 +20,18 @@ describe('pattern editing', () => {
     p = toggleRest(p, 0);
     expect(p.notes[0]!.on).toBe(true);
   });
-  it('16 -> 32 duplicates an empty upper half, 32 -> 16 keeps data', () => {
-    const p = clickCell(emptyPattern(16), 2, 60, 0.5);
+  it('growing adds rests (no duplication), shrinking keeps hidden data', () => {
+    const p = clickCell(emptyPattern(4), 2, 60, 0.5);
     const p32 = setStepCount(p, 32);
     expect(p32.steps).toBe(32);
-    expect(p32.notes[18]).toMatchObject({ on: true, midi: 60 });
+    expect(p32.notes[2]).toMatchObject({ on: true, midi: 60 });
+    expect(p32.notes.slice(4).every((s) => !s.on)).toBe(true);
     const edited = clickCell(p32, 20, 72, 0.5);
-    const back = setStepCount(edited, 16);
-    expect(back.steps).toBe(16);
+    const back = setStepCount(edited, 8);
+    expect(back.steps).toBe(8);
     expect(back.notes[20]).toMatchObject({ on: true, midi: 72 });
     const again = setStepCount(back, 32);
     expect(again.notes[20]).toMatchObject({ on: true, midi: 72 });
-    expect(again.notes[18]).toMatchObject({ on: true, midi: 60 });
   });
   it('transposes and limits the shift to the MIDI range', () => {
     const p = clickCell(clickCell(emptyPattern(), 0, 60, 0.5), 1, 100, 0.5);

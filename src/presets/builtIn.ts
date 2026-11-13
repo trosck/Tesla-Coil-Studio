@@ -135,7 +135,7 @@ export const BUILT_IN_PRESETS: readonly Preset[] = [
     waveform: 'global',
     gain: 0.85,
   }),
-  preset('sequencer', 'builtin-electronic-rhythm', 'Electronic Rhythm', 'Two-bar A minor bass riff at 132 BPM (patterns A → B chained), 110–330 Hz.', {
+  preset('sequencer', 'builtin-electronic-rhythm', 'Electronic Rhythm', 'One-bar A minor bass riff at 132 BPM in pattern A, with a second bar in B (turn on Chain to play A → B), 110–330 Hz.', {
     bpm: 132,
     swing: 0.08,
     gate: 0.45,
@@ -145,7 +145,7 @@ export const BUILT_IN_PRESETS: readonly Preset[] = [
     range: 2,
     density: 0.6,
     current: 0,
-    chain: true,
+    chain: false,
     chainSlots: [true, true, false, false],
     patterns: [RHYTHM_A, RHYTHM_B, emptyPattern(), emptyPattern()],
   }),

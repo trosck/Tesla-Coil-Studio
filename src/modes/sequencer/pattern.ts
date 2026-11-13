@@ -38,17 +38,11 @@ export function toggleRest(p: SeqPattern, i: number): SeqPattern {
 }
 
 /**
- * Change the played length. 16 -> 32 duplicates the first half when the second
- * half holds no notes (otherwise keeps it); 32 -> 16 only stops playing steps
- * 16..31, their data is kept.
+ * Change the played length. Only the played range changes: steps beyond it
+ * keep their data (shrinking then growing again restores them).
  */
 export function setStepCount(p: SeqPattern, steps: StepCount): SeqPattern {
   if (steps === p.steps) return p;
-  if (steps === 32) {
-    const upperEmpty = p.notes.slice(16).every((s) => !s.on);
-    const notes = p.notes.map((s, i) => (i >= 16 && upperEmpty ? { ...p.notes[i - 16]! } : { ...s }));
-    return { steps, notes };
-  }
   return { ...clonePattern(p), steps };
 }
 

@@ -17,9 +17,10 @@ import {
   stepTime,
   type SeqPattern,
   type SequencerParams,
+  type StepCount,
 } from './build';
 
-function pattern(cells: Array<[number, number, number, number]>, steps: 16 | 32 = 16): SeqPattern {
+function pattern(cells: Array<[number, number, number, number]>, steps: StepCount = 16): SeqPattern {
   const p = emptyPattern(steps);
   for (const [i, midi, length, velocity] of cells) p.notes[i] = { on: true, midi, length, velocity };
   return p;
@@ -219,5 +220,10 @@ describe('normalizeSequencerParams', () => {
     expect(n.patterns[1]!.steps).toBe(16);
     // builds without throwing
     expect(buildSequencer(n)).not.toBeNull();
+  });
+  it('accepts 4/8/16/32 step counts and rejects others', () => {
+    const steps = (v: unknown) => normalizeSequencerParams({ patterns: [{ steps: v }] }).patterns[0]!.steps;
+    for (const v of [4, 8, 16, 32]) expect(steps(v)).toBe(v);
+    for (const v of [0, 5, 12, 64, '8', null]) expect(steps(v)).toBe(16);
   });
 });

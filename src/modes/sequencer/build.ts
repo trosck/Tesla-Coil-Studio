@@ -23,14 +23,19 @@ export interface SeqStep {
   velocity: number;
 }
 
-export type StepCount = 16 | 32;
+export const STEP_COUNTS = [4, 8, 16, 32] as const;
+export type StepCount = (typeof STEP_COUNTS)[number];
+
+export function isStepCount(v: unknown): v is StepCount {
+  return (STEP_COUNTS as readonly unknown[]).includes(v);
+}
 
 export interface SeqPattern {
-  /** Number of steps that play (16 or 32). */
+  /** Number of steps that play. */
   steps: StepCount;
   /**
    * Always MAX_STEPS entries. Steps beyond `steps` are kept (not played), so
-   * switching 32 -> 16 -> 32 does not lose data.
+   * shrinking and growing again does not lose data.
    */
   notes: SeqStep[];
 }
@@ -155,7 +160,7 @@ export function normalizeStep(raw: unknown, fallback: SeqStep): SeqStep {
 
 export function normalizePattern(raw: unknown, fallback: SeqPattern): SeqPattern {
   if (!isRec(raw)) return clonePattern(fallback);
-  const steps: StepCount = raw.steps === 32 ? 32 : raw.steps === 16 ? 16 : fallback.steps;
+  const steps: StepCount = isStepCount(raw.steps) ? raw.steps : fallback.steps;
   const src = Array.isArray(raw.notes) ? raw.notes : [];
   const notes = Array.from({ length: MAX_STEPS }, (_, i) =>
     normalizeStep(src[i], restStep()),
