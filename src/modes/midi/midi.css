@@ -178,7 +178,7 @@
 }
 .mode-midi__track[aria-checked='true'] {
   border-color: var(--tp-item-hover-border);
-  background: color-mix(in srgb, var(--blue) 12%, var(--surface));
+  background: color-mix(in srgb, var(--mode-midi-2) 12%, var(--surface));
   color: var(--text);
 }
 /* XP checkbox */
@@ -277,7 +277,7 @@
   opacity: 0.8;
 }
 .mode-midi__swatch--mono {
-  background: var(--blue);
+  background: var(--mode-midi-2);
 }
 .mode-midi__empty {
   color: var(--text-faint);

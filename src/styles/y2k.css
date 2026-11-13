@@ -253,6 +253,8 @@ button.wbtn:hover {
 .orb--sequencer { --orb-1: var(--mode-sequencer-1); --orb-2: var(--mode-sequencer-2); }
 .orb--midi { --orb-1: var(--mode-midi-1); --orb-2: var(--mode-midi-2); }
 .orb--frequency { --orb-1: var(--mode-frequency-1); --orb-2: var(--mode-frequency-2); }
+/* neutral silver/slate orb for non-mode items (e.g. Bluetooth pairing) */
+.orb--neutral { --orb-1: var(--border-strong); --orb-2: var(--text-faint); }
 
 /* ---------- Starburst sticker ---------- */
 .burst {

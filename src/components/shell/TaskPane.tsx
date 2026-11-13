@@ -98,7 +98,7 @@ export function TaskPane() {
             <span className="mode-btn__label">Setup guide</span>
           </button>
           <button type="button" className="mode-btn" onClick={openGuide} aria-haspopup="dialog" title="Pairing steps are in the setup guide">
-            <span className="orb orb--midi">
+            <span className="orb orb--neutral">
               <OrbGlyph d={PLACE_ICON.bluetooth} size={13} />
             </span>
             <span className="mode-btn__label">Bluetooth pairing</span>
