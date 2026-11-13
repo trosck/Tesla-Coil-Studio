@@ -39,7 +39,7 @@ function FrequencyPanel({ params, setParams }: ModePanelProps<FrequencyParams>) 
         <BigReadout frequency={params.frequency} />
         <div className="mode-frequency__top-controls">
           <div className="mode-frequency__hold">
-            <HoldButton variant="primary" size="lg" frequency={params.frequency} gain={params.gain} title="Sounds while pressed (mouse, touch, Enter/Space)">
+            <HoldButton variant="play" size="lg" frequency={params.frequency} gain={params.gain} title="Sounds while pressed (mouse, touch, Enter/Space)">
               Hold to test {formatHz(params.frequency)} Hz
             </HoldButton>
           </div>

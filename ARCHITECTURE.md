@@ -50,7 +50,8 @@ src/
     types.ts              Preset
     builtIn.ts            BUILT_IN_PRESETS (10, typed with each mode's params), FEATURED_PRESET_IDS
     storage.ts            user presets in localStorage (observable)
-    io.ts                 JSON export / import validation
+    io.ts                 JSON export / import validation, planImport (dedupe + message)
+    fileActions.ts        exportUserPresets / importPresetFile (Presets mode + Explorer toolbar)
   modes/
     registry.ts           tab order (imports `mode` from each folder; Presets first)
     <id>/index.tsx        one folder per mode: presets ramp pulse siren random
@@ -58,11 +59,18 @@ src/
   components/
     ui/                   primitives: Button, Slider, NumberField/NumberInput, Select,
                           Toggle, SegmentedControl, Panel, Field, Icon (+ ui.css)
-    shell/                Header, ModeTabs, SafetyNotice (SAFETY_TEXT), SetupGuide + guideStore
-    transport/            TransportBar (Space shortcut, mobile bottom bar), ExportDialog
-    visualizer/           Oscilloscope, Spectrum, Readouts, canvasLoop
+    shell/                WindowChrome (TitleBar, MenuBar), Header (aero brand band + status pill),
+                          TaskPane (Coil modes = the mode tablist, Details, Other places),
+                          Explorer (preset toolbar, address bar, active mode panel, status bar),
+                          SavePresetDialog, SafetyNotice (SAFETY_TEXT), SetupGuide + guideStore,
+                          StatusHelp, icons (pixel icons, mode orb glyphs, caption buttons),
+                          nowShowing (useNowShowing: source mode + loaded preset name)
+    desktop/              Desktop: Bubbles, DesktopIcons, Taskbar (start button, tray clock)
+    transport/            TransportBar (player deck + LCD, Space shortcut, mobile bottom bar),
+                          ExportDialog, exportStore (openExport / closeExport)
+    visualizer/           Oscilloscope, Spectrum, Readouts, canvasLoop (drawn inside the deck LCD)
   lib/                    store.ts (observable), useStore.ts, persist.ts
-  styles/                 tokens.css (CSS variables), global.css
+  styles/                 tokens.css (CSS variables), y2k.css (shared Y2K classes), global.css
 ```
 
 ## 1. Event model (`src/audio/types.ts`)
@@ -319,7 +327,11 @@ continuing to play a mode that is no longer visible would be confusing.
   `parsePresetFile(text, normalize)` validates (format/version, mode ids, names,
   params passed through the target mode's `normalizeParams`; a bare array is
   accepted), returns `{ presets, invalid }` or throws a readable Error;
-  `presetKey()` is used to skip duplicates on import.
+  `presetKey()` is used to skip duplicates on import; `planImport(parsed, existingKeys)`
+  drops duplicates and builds the user-facing summary. `src/presets/fileActions.ts`
+  wires it to storage and downloads: `exportUserPresets()` and
+  `importPresetFile(file, modes)` return `{ kind: 'ok' | 'error', text }` (import
+  also `added`); used by the Presets mode and the Explorer toolbar.
 - Loading: `useStudio().loadPreset(preset, { play?, open? })` normalizes a
   deep copy of `preset.params` through the target mode's `normalizeParams`
   (built-ins are never mutated), stores them as that mode's params and switches
@@ -336,31 +348,62 @@ continuing to play a mode that is no longer visible would be confusing.
 steps, tips and `SAFETY_TEXT`; "Play test signal" loads `builtin-test-signal`
 with `play: true`. Open state lives in `guideStore.ts` (`openGuide()`,
 `closeGuide()`); it opens automatically until dismissed once
-(`tcs.guideSeen.v1`). The header "Setup guide" button and the Presets tab link
-call `openGuide()`.
+(`tcs.guideSeen.v1`). The menu bar (Help, Setup guide…), the task pane's
+"Other places", the "Setup guide.txt" desktop icon and the Presets mode link
+call `openGuide()`. The Export WAV dialog works the same way through
+`transport/exportStore.ts` (`openExport()` from the deck, the task pane and the
+"WAV exports" desktop icon; `App` renders the dialog).
 
 ## 8. UI and styling conventions
 
-- Plain CSS. Tokens in `src/styles/tokens.css` (colors, radii, spacing, fonts,
-  durations); global reset in `global.css`. Each component/feature imports its
-  own CSS file next to it (`ui/ui.css`, `transport/transport.css`,
-  `visualizer/visualizer.css`, `App.css`). Prefixes: `.ui-*` primitives,
-  `.app-*` shell, `.viz-*` visualizer, `.mode-<id>*` modes. No CSS modules.
+- Look: light Windows XP / Y2K ("Tesla Coil Studio 2000") — the only theme,
+  `color-scheme: light`. Bliss desktop (painted by `body::before` in
+  `global.css`; never give `body`/`.app` an opaque background), a Luna window,
+  chrome player deck with an LCD, XP task pane + white explorer, XP taskbar.
+  Decorative mock elements with no real feature (caption buttons, File/Edit/
+  View/Coil menus, address bar, Recycle Bin, quick launch) are `aria-hidden`
+  non-interactive markup, never dead buttons.
+- Plain CSS. Tokens in `src/styles/tokens.css`: colors (legacy names such as
+  `--surface`, `--cyan` remapped to the light palette), radii, spacing,
+  durations, fonts (`--font-ui` Tahoma/Verdana, `--font-lcd` VT323,
+  `--font-display` Michroma; VT323 + Michroma load from Google Fonts in
+  `index.html`), XP surfaces (`--win-*`, `--titlebar*`, `--menu-*`, `--tp-*`,
+  `--field-*`, `--desk*`, `--taskbar`, `--tray*`), gradients (`--gel-*`,
+  `--chrome*`), LCD (`--lcd-bg`, `--lcd-flat` for canvases, `--lcd-ink`,
+  `--lcd-ink-dim/-faint`, `--lcd-border`) and a two-stop color per mode
+  (`--mode-<id>-1/-2`, used by `.orb--<id>`). No hard-coded colors in
+  component CSS. `src/styles/y2k.css` (imported by `ui.css`) holds the shared
+  look-only classes: `.win .titlebar .wbtn .menu .aero .taskpane .tp-head
+  .tp-body .gel(-blue/-green/-red/-silver) .flat .chrome .chrome-text .lcd
+  .lcd-chip .chip .orb .burst .balloon .bubble .taskbar .tray .blink`. Global
+  reset in `global.css`. Each component/feature imports its own CSS file next
+  to it (`ui/ui.css`, `shell/shell.css`, `desktop/desktop.css`,
+  `transport/transport.css`, `visualizer/visualizer.css`, `App.css`).
+  Prefixes: `.ui-*` primitives, `.desk*`/`.app-*`/`.explorer*` frame, `.viz-*`
+  visualizer, `.mode-<id>*` modes. No CSS modules.
+- Primitives: `Button` variants `secondary` (silver gel), `primary` (blue),
+  `danger` (red), `ghost` (`.flat`), `play` (green); `SegmentedControl` = gel
+  row; `Panel` = task-pane group; inputs are XP style.
+- Canvases (visualizer, piano roll, curves) read CSS variables at runtime.
 - Accessibility: labeled controls (`Field`/`useId`), `role="switch"` toggles,
-  `radiogroup` segmented controls with arrow keys, tablist for modes.
+  `radiogroup` segmented controls with arrow keys, a vertical tablist for modes
+  (task pane "Coil modes", arrows/Home/End; the explorer content is its
+  tabpanel).
 - **Space = play/pause** (TransportBar), except while typing (text inputs,
   textarea, select, contenteditable), on controls that Space activates
   (buttons, radios, switches, checkboxes, piano keys…) and while a modal dialog
-  is open. It does work on the mode tabs and on elements marked
+  is open. It does work on the mode tabs (task pane) and on elements marked
   `data-space="transport"` (PLAY / PAUSE). The melody keyboard uses letter
   keys only, so there is no conflict.
-- Layout: two columns ≥ 961 px; single column below; ≤ 720 px the playback
-  buttons become a fixed bottom bar (`.transport__buttons`), the visualizer
-  moves below the modes, and `.app` reserves bottom padding. Grids use
+- Layout: the task pane sits beside the explorer and wraps above it on narrow
+  windows. ≤ 760 px the desktop icons and taskbar quick launch are hidden, the
+  task pane lists modes in two columns, the deck's playback buttons become a
+  fixed bottom bar (`.deck__buttons`) and `.desk` reserves bottom padding. Grids use
   `minmax(min(100%, Npx), 1fr)` so nothing forces horizontal scroll at 360 px;
   wide content (sequencer grid, melody timeline) scrolls inside its own container.
-- The safety notice (`SafetyNotice`, exact `SAFETY_TEXT`) is always rendered at
-  the bottom; the transport shows a one-line "audio signal only" warning.
+- The safety notice (`SafetyNotice`, exact `SAFETY_TEXT`) is always rendered as
+  a dialog-style window below the main window; the deck's balloon tip (until
+  audio starts) says the app controls only the audio signal.
 - Visualizers use `startCanvasLoop` (rAF, devicePixelRatio, ResizeObserver,
   skips work when hidden/off-screen).
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ModeId } from '../studio/types';
-import { PRESET_FILE_FORMAT, parsePresetFile, presetKey, serializePresets } from './io';
+import { PRESET_FILE_FORMAT, parsePresetFile, planImport, presetKey, serializePresets } from './io';
 import type { Preset } from './types';
 
 const normalize = (mode: ModeId, params: unknown) => (mode === 'midi' ? undefined : { ...(params as object), ok: true });
@@ -50,5 +50,24 @@ describe('preset files', () => {
   it('presetKey identifies duplicates regardless of case/whitespace in the name', () => {
     expect(presetKey({ mode: 'siren', name: ' Mine ', params: { a: 1 } })).toBe(presetKey({ mode: 'siren', name: 'mine', params: { a: 1 } }));
     expect(presetKey({ mode: 'siren', name: 'mine', params: { a: 1 } })).not.toBe(presetKey({ mode: 'siren', name: 'mine', params: { a: 2 } }));
+  });
+});
+
+describe('planImport', () => {
+  const a = { name: 'A', mode: 'siren' as const, params: { x: 1 } };
+  const b = { name: 'B', mode: 'pulse' as const, params: {} };
+
+  it('skips existing and repeated presets and summarizes', () => {
+    const r = planImport({ presets: [a, b, { ...b, name: ' b ' }], invalid: 2 }, [presetKey(a)]);
+    expect(r.fresh).toEqual([b]);
+    expect(r.message).toEqual({ kind: 'ok', text: 'Imported 1 preset (2 already present, 2 invalid skipped).' });
+  });
+
+  it('reports an error when nothing usable was found', () => {
+    expect(planImport({ presets: [], invalid: 3 }, []).message).toEqual({ kind: 'error', text: 'Imported 0 presets (3 invalid skipped).' });
+  });
+
+  it('counts all-duplicate imports as ok', () => {
+    expect(planImport({ presets: [a], invalid: 0 }, [presetKey(a)]).message).toEqual({ kind: 'ok', text: 'Imported 0 presets (1 already present).' });
   });
 });

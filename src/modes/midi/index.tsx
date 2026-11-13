@@ -220,7 +220,7 @@ function Tracks({ summary, selected }: { summary: MidiSummary; selected: number[
                   </span>
                 </span>
                 <span className="mode-midi__track-meta">
-                  {t.isPercussion && <span className="mode-midi__badge">drums</span>}
+                  {t.isPercussion && <span className="mode-midi__badge chip">drums</span>}
                   <span>{t.noteCount.toLocaleString()} notes</span>
                   <span className="mode-midi__muted">{rangeLabel(t.minMidi, t.maxMidi)}</span>
                 </span>
@@ -293,7 +293,7 @@ function MIDIPanel({ params: p, setParams, setPlayable }: ModePanelProps<MidiPar
             />
             <Button
               size="sm"
-              variant="primary"
+              variant={ours && isPlaying ? 'secondary' : 'play'}
               disabled={!sequence}
               onClick={() => {
                 if (ours && isPlaying) stop();

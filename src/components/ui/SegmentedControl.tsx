@@ -42,7 +42,7 @@ export function SegmentedControl<T extends string>({ value, options, onChange, c
             aria-checked={on}
             tabIndex={on ? 0 : -1}
             title={o.title}
-            className="ui-seg__opt"
+            className="ui-seg__opt gel"
             onClick={() => onChange(o.value)}
           >
             {o.label}

@@ -123,7 +123,7 @@ export function BigReadout({ frequency }: { frequency: number }) {
   const shown = live || frequency;
   const n = freqToNearestNote(shown);
   return (
-    <div className={live ? 'mode-frequency__big is-live' : 'mode-frequency__big'} aria-live="off">
+    <div className={live ? 'mode-frequency__big lcd is-live' : 'mode-frequency__big lcd'} aria-live="off">
       <div className="mode-frequency__big-tag">{live ? 'Output' : 'Set'}</div>
       <div className="mode-frequency__big-value">
         {formatHz(shown)}

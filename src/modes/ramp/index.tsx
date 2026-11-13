@@ -57,7 +57,7 @@ function RampPanel({ params, setParams }: ModePanelProps<RampParams>) {
         title="Trajectory"
         className="mode-ramp__preview"
         actions={
-          <span className="mode-ramp__readout">
+          <span className="mode-ramp__readout lcd-chip">
             {p.startFreq < p.endFreq ? '↗' : p.startFreq > p.endFreq ? '↘' : '→'} {octaves.toFixed(2)} oct · {rep.toFixed(2)} s / ramp
           </span>
         }

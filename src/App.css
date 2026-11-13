@@ -1,226 +1,121 @@
-.app {
+/* Page frame: Bliss desktop (painted by body::before in global.css), main
+   window, task pane + explorer body, safety window. Desktop icons, bubbles
+   and the taskbar live in components/desktop/desktop.css. */
+.desk {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
-  max-width: 1440px;
-  min-height: 100%;
-  margin: 0 auto;
-  padding: var(--space-4) var(--space-5) var(--space-3);
+  min-height: 100vh;
+  min-height: 100dvh;
   overflow-x: clip;
 }
-@media (max-width: 720px) {
-  .app {
-    /* room for the fixed transport bar */
-    padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px));
-  }
-  .app-brand__sub {
-    display: none;
-  }
-  .app-status {
-    width: 100%;
-  }
-  .app-status__device {
-    flex: 1 1 100%;
-    min-width: 0;
-  }
-  .app-status__pill {
-    min-width: 0;
-  }
-  .app-status__live {
-    overflow: hidden;
-  }
-}
-
-/* header */
-.app-header {
+.desk__main {
+  position: relative;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: var(--space-3);
-}
-.app-brand {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-}
-.app-brand__logo {
-  display: grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius);
-  color: var(--cyan);
-  background: radial-gradient(circle at 50% 40%, rgb(34 229 255 / 0.25), rgb(162 89 255 / 0.15) 70%);
-  border: 1px solid rgb(34 229 255 / 0.4);
-  box-shadow: var(--accent-glow);
-}
-.app-brand__name {
-  margin: 0;
-  font-size: 20px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  background: linear-gradient(90deg, var(--cyan), var(--blue) 55%, var(--purple));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-.app-brand__sub {
-  margin: 0;
-  font-size: 12px;
-  color: var(--text-faint);
-}
-.app-status {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-}
-.app-status__pill {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  max-width: 100%;
-  height: var(--control-h);
-  /* the "?" help button sits at the right end, inset like the left padding of the dot */
-  padding: 0 var(--space-1) 0 var(--space-3);
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: var(--surface);
-  font-size: 12px;
-  color: var(--text-dim);
-}
-.app-status__dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--text-faint);
-  transition: background var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
-}
-.app-status__pill--running .app-status__dot,
-.status-help__row--running .app-status__dot {
-  background: var(--ok);
-  box-shadow: 0 0 8px var(--ok);
-}
-.app-status__pill--suspended .app-status__dot,
-.app-status__pill--interrupted .app-status__dot,
-.app-status__pill--starting .app-status__dot,
-.status-help__row--suspended .app-status__dot,
-.status-help__row--interrupted .app-status__dot,
-.status-help__row--starting .app-status__dot {
-  background: var(--warn);
-}
-.app-status__pill--error .app-status__dot,
-.app-status__pill--unsupported .app-status__dot,
-.app-status__pill--closed .app-status__dot,
-.status-help__row--error .app-status__dot,
-.status-help__row--unsupported .app-status__dot,
-.status-help__row--closed .app-status__dot {
-  background: var(--danger);
-}
-.app-status__live {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  min-width: 0;
-  white-space: nowrap;
-}
-.app-status__sr {
-  color: var(--text-faint);
-}
-
-/* main grid */
-.app-main {
-  display: grid;
-  grid-template-columns: minmax(0, 1.25fr) minmax(320px, 1fr);
-  gap: var(--space-4);
-  align-items: start;
-  flex: 1;
-}
-.app-side {
-  position: sticky;
-  top: var(--space-4);
-  min-width: 0;
-}
-@media (max-width: 960px) {
-  .app {
-    padding: var(--space-3);
-  }
-  .app-main {
-    grid-template-columns: 1fr;
-  }
-  .app-side {
-    position: static;
-    order: -1;
-  }
-}
-
-/* mode tabs */
-.modes {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  min-width: 0;
-}
-.modes__tabs {
-  display: flex;
-  scroll-behavior: smooth;
-  overscroll-behavior-x: contain;
-  gap: 2px;
-  padding: 3px;
-  overflow-x: auto;
-  scrollbar-width: thin;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--bg-elev);
-}
-.modes__tab {
   flex: 1 0 auto;
-  min-height: var(--touch-h);
-  padding: 0 var(--space-3);
-  border: 1px solid transparent;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  color: var(--text-dim);
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  cursor: pointer;
+  align-items: flex-start;
+  gap: 20px;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px 16px 32px;
+}
+.desk__windows {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 22px;
+  min-width: 0;
+}
+
+/* main window */
+.app-win {
+  min-width: 0;
+}
+.win__titlebar {
+  min-width: 0;
+}
+.win__title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
-  transition: color var(--dur) var(--ease), background var(--dur) var(--ease), border-color var(--dur) var(--ease);
 }
-.modes__tab[data-source]:not([aria-selected='true'])::after {
-  content: '';
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  margin-left: 6px;
-  vertical-align: middle;
-  border-radius: 50%;
-  background: var(--cyan);
-  box-shadow: 0 0 6px var(--cyan);
+
+/* body: task pane + explorer (wraps to stacked on narrow windows) */
+.app-body {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 10px;
+  border-top: 1px solid var(--menu-border);
 }
-.modes__tab:hover {
-  color: var(--text);
+.explorer {
+  display: flex;
+  flex: 999 1 560px;
+  flex-direction: column;
+  min-width: 0;
   background: var(--surface);
 }
-.modes__tab[aria-selected='true'] {
-  color: var(--cyan);
-  background: rgb(34 229 255 / 0.08);
-  border-color: rgb(34 229 255 / 0.45);
-  box-shadow: inset 0 -2px 0 var(--cyan);
+.explorer__bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--menu-border);
+  background: var(--menu-face);
 }
-.modes__panel {
+.explorer__tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.explorer__address {
+  display: flex;
+  flex: 1 1 280px;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  margin-left: 6px;
+}
+.explorer__address-label {
+  font-size: 12px;
+  color: var(--text-faint);
+}
+.explorer__address-field {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  height: 26px;
+  padding: 0 6px;
+  overflow: hidden;
+  border: 1px solid var(--field-border);
+  background: var(--field-bg);
+}
+.explorer__address-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.gel.explorer__go {
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: default;
+}
+.explorer__content {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
-  animation: tcs-fade-in 200ms var(--ease);
+  gap: 20px;
+  min-width: 0;
+  padding: 18px 20px 22px;
+  animation: explorer-in 200ms var(--ease);
 }
-.modes__desc {
-  margin: 0;
-  color: var(--text-dim);
-}
-@keyframes tcs-fade-in {
+@keyframes explorer-in {
   from {
     opacity: 0;
     transform: translateY(4px);
@@ -231,40 +126,82 @@
   }
 }
 
-/* safety */
-.app-safety {
+/* XP status bar */
+.statusbar {
   display: flex;
-  align-items: flex-start;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
-  border: 1px solid rgb(255 194 74 / 0.25);
-  border-radius: var(--radius);
-  background: rgb(255 194 74 / 0.04);
-  color: var(--text-dim);
+  flex-wrap: wrap;
+  margin-top: auto;
+  border-top: 1px solid var(--menu-border);
+  background: var(--menu-face);
   font-size: 12px;
+  color: var(--text-dim);
 }
-.app-safety p {
-  margin: 0;
-  max-width: 120ch;
+.statusbar__cell {
+  padding: 4px 10px;
+  border-right: 1px solid var(--menu-border);
 }
-@media (max-width: 720px) {
-  .app-safety {
-    flex-direction: column;
-    gap: var(--space-1);
-    padding: var(--space-3);
-    font-size: 11px;
-  }
+.statusbar__msg {
+  flex: 1 1 auto;
+  border-right: 0;
+  color: var(--text);
 }
-.app-safety__badge {
-  flex: none;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  color: var(--warn);
+.statusbar__msg:empty {
+  padding: 0;
+}
+.statusbar__msg--error {
+  color: var(--danger);
 }
 
-/* phones: modes (presets) first, the visualizer below them (after the 960px rule) */
-@media (max-width: 720px) {
-  .app-side {
-    order: 0;
+/* safety window */
+.win.safety {
+  max-width: 780px;
+  border-radius: 8px 8px 4px 4px;
+}
+.titlebar.safety__titlebar {
+  padding: 5px 8px 5px 10px;
+  font-size: 13px;
+}
+.safety__title {
+  flex: 1;
+  margin: 0;
+  font-size: 13px;
+}
+.safety__body {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px 18px;
+}
+.safety__body p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+@media (max-width: 760px) {
+  .desk {
+    /* room for the fixed transport bar */
+    padding-bottom: calc(66px + env(safe-area-inset-bottom, 0px));
+  }
+  .desk__main {
+    gap: 0;
+    padding: 12px 8px 16px;
+  }
+  .desk__windows {
+    gap: 16px;
+  }
+  .explorer__address {
+    flex-basis: 100%;
+    margin-left: 0;
+  }
+  .explorer__content {
+    padding: 12px 10px 16px;
+  }
+  .safety__body {
+    gap: 10px;
+    padding: 12px;
+  }
+  .safety__body p {
+    font-size: 12px;
   }
 }

@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import type { OutputDevice } from '../../audio/engine';
 import { usePlayback, useStudio } from '../../studio/StudioContext';
-import { Button, Icon, Select } from '../ui';
+import { Select } from '../ui';
 import { STATUS_TEXT } from './audioStatus';
-import { openGuide } from './guideStore';
+import { BoltIcon } from './icons';
 import { StatusHelp } from './StatusHelp';
+import './shell.css';
 
 export function Header() {
   const { engine } = useStudio();
@@ -33,37 +34,41 @@ export function Header() {
   }, [canSelect, engine]);
 
   return (
-    <header className="app-header">
-      <div className="app-brand">
-        <span className="app-brand__logo" aria-hidden="true">
-          <Icon name="bolt" size={22} />
-        </span>
-        <div>
-          <h1 className="app-brand__name">Tesla Coil Studio</h1>
-          <p className="app-brand__sub">Audio signal generator for musical Tesla coils</p>
-        </div>
+    <header className="aero brand">
+      <div className="orb brand__orb" aria-hidden="true">
+        <BoltIcon size={30} className="bolt-icon--orb" />
       </div>
-      <div className="app-status">
+      <div className="brand__text">
+        <h1 className="chrome-text brand__name">TESLA COIL STUDIO</h1>
+        <p className="brand__tagline">
+          audio signal generator for musical Tesla coils · <b>est. 2000-something</b>
+        </p>
+      </div>
+      <div className="burst burst-green brand__burst" aria-hidden="true">
+        <span>
+          AUDIO
+          <br />
+          ONLY!
+        </span>
+      </div>
+      <div className="brand__status">
         {canSelect && devices.length > 1 && (
           <Select
             aria-label="Audio output device"
-            className="app-status__device"
+            className="brand__device"
             value={deviceId}
             onChange={(id) => void engine.setOutputDevice(id)}
             options={[{ value: '', label: 'System default output' }, ...devices.filter((d) => d.deviceId !== 'default' && d.deviceId !== '').map((d) => ({ value: d.deviceId, label: d.label }))]}
           />
         )}
-        <div className={`app-status__pill app-status__pill--${status}`} title={error ?? undefined}>
-          <span className="app-status__live" role="status">
-            <span className="app-status__dot" aria-hidden="true" />
+        <div className={`chrome status-pill status-pill--${status}`} title={error ?? undefined}>
+          <span className="status-pill__live" role="status">
+            <span className={`status-led status-led--${status}`} aria-hidden="true" />
             <span>{STATUS_TEXT[status] ?? status}</span>
-            {running && sampleRate && <span className="mono app-status__sr">{(sampleRate / 1000).toFixed(1)} kHz</span>}
+            {running && sampleRate && <span className="status-pill__sr">{(sampleRate / 1000).toFixed(1)} kHz</span>}
           </span>
           <StatusHelp status={status} error={error} />
         </div>
-        <Button variant="ghost" icon={<Icon name="help" />} onClick={openGuide} aria-haspopup="dialog">
-          Setup guide
-        </Button>
       </div>
     </header>
   );

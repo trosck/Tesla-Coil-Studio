@@ -1,32 +1,152 @@
-/* Design tokens. Use these variables everywhere; never hard-code colors. */
+/* Design tokens — light Y2K / Windows XP "Luna" theme.
+   Use these variables everywhere; never hard-code colors in component CSS.
+   Legacy names (--bg, --surface, --cyan, --purple …) are kept and remapped so
+   older component CSS keeps working on the light palette. */
 :root {
-  --bg: #0b0d12;
-  --bg-elev: #11141b;
-  --surface: #161a23;
-  --surface-2: #1c2130;
-  --surface-3: #242a3b;
-  --border: #2a3142;
-  --border-strong: #3a4359;
+  /* ---------- core palette (legacy names, remapped) ---------- */
+  --bg: #ffffff; /* wells, canvases, inputs; also "text on accent" */
+  --bg-elev: #f7f6f0;
+  --surface: #ffffff; /* explorer / card face */
+  --surface-2: #f3f1e7; /* window face */
+  --surface-3: #ece9d8; /* menu / toolbar face */
+  --border: #c9c4ae;
+  --border-strong: #7f9db9; /* XP input border */
 
-  --text: #e6ecf5;
-  --text-dim: #9aa6bb;
-  --text-faint: #66728a;
+  --text: #10223f;
+  --text-dim: #3c4d6b;
+  --text-faint: #6b7890;
 
-  --cyan: #22e5ff;
-  --blue: #3d7bff;
-  --purple: #a259ff;
-  --accent: var(--cyan);
+  --cyan: #0f7fc4;
+  --blue: #1a62d6;
+  --purple: #7a3fd6;
+  --accent: var(--blue);
   --accent-2: var(--purple);
-  --accent-glow: 0 0 0 1px rgb(34 229 255 / 0.35), 0 0 18px rgb(34 229 255 / 0.25);
-  --purple-glow: 0 0 0 1px rgb(162 89 255 / 0.4), 0 0 18px rgb(162 89 255 / 0.25);
+  --accent-glow: 0 0 0 1px #7da2ce, 0 0 0 3px rgb(26 98 214 / 0.2);
+  --purple-glow: 0 0 0 1px #a98be0, 0 0 0 3px rgb(122 63 214 / 0.2);
 
-  --ok: #3ef0a0;
-  --warn: #ffc24a;
-  --danger: #ff4d6d;
+  --ok: #2f8f08;
+  --warn: #c27c00;
+  --danger: #cf2c22;
 
-  --radius-sm: 6px;
-  --radius: 10px;
-  --radius-lg: 16px;
+  --link: #0b46ad;
+  --link-hover: #062a6b;
+  --focus-ring: #0b2a66;
+  --select-bg: #316ac5; /* XP selection / menu hover */
+  --select-text: #ffffff;
+
+  /* ---------- XP window chrome ---------- */
+  --win-face: #f3f1e7;
+  --win-border: #0a3a9c;
+  --win-frame: #2a6fe3;
+  --win-shadow: 0 0 0 3px var(--win-frame), 0 0 0 4px var(--win-border), 0 18px 40px rgb(6 30 80 / 0.45);
+  --titlebar: linear-gradient(#5aa2ff 0%, #2a72e6 10%, #0c55d0 55%, #0a4ab8 90%, #0b3f9e 100%);
+  --titlebar-text: #ffffff;
+  --titlebar-text-shadow: 1px 1px 0 #0a2a6b;
+  --wbtn: linear-gradient(#6ea8ff, #2a63d8);
+  --wbtn-close: linear-gradient(#ff9a7a, #e04a1f 55%, #c23310);
+  --menu-face: #ece9d8;
+  --menu-border: #c9c4ae;
+  --flat-hover-bg: #fdfcf6;
+  --flat-hover-border: #b9b39c;
+  --aero: linear-gradient(180deg, #f2fbff 0%, #cfeeff 48%, #a9dcff 52%, #d9f2ff 100%);
+
+  /* ---------- task pane ---------- */
+  --taskpane: linear-gradient(#7ba2e7, #6375d6);
+  --tp-head: linear-gradient(90deg, #ffffff 0%, #c6d3f7 100%);
+  --tp-head-text: #16449c;
+  --tp-body: #dbe4f8;
+  --tp-item-hover-border: #9db6ea;
+
+  /* ---------- XP inputs ---------- */
+  --field-bg: #ffffff;
+  --field-border: #7f9db9;
+  --field-border-hover: #3c7fb1;
+  --field-disabled-bg: #f4f3ee;
+
+  /* ---------- gel buttons ---------- */
+  --gel-blue: linear-gradient(#64aaff, #1a62d6 55%, #0b46ad);
+  --gel-green: linear-gradient(#97e866, #35a012 55%, #1f7a08);
+  --gel-red: linear-gradient(#ff8f80, #cf2c22 55%, #a01410);
+  --gel-silver: linear-gradient(#ffffff, #e1e6ec 48%, #c3cbd5 52%, #eef1f4);
+  --gel-text: #ffffff;
+  --gel-silver-text: #13213d;
+  --gel-border: rgb(0 0 0 / 0.4);
+  --gel-shadow: inset 0 1px 0 rgb(255 255 255 / 0.6), inset 0 -6px 10px rgb(255 255 255 / 0.2), 0 2px 4px rgb(0 30 80 / 0.35);
+  --gel-shine: linear-gradient(rgb(255 255 255 / 0.85), rgb(255 255 255 / 0.08));
+
+  /* ---------- brushed chrome ---------- */
+  --chrome: linear-gradient(#fbfcfd 0%, #dfe4ea 46%, #bec6d0 50%, #e3e7ec 100%);
+  --chrome-border: #7f8a9b;
+  --chrome-text: linear-gradient(#ffffff 0%, #d4e1f3 38%, #5a6f93 50%, #f2f7fd 60%, #9fb3d1 100%);
+  --chrome-text-stroke: #17306a;
+  --slider-track: linear-gradient(#8f9bab, #eef1f5);
+  --slider-track-border: #6f7a8a;
+  --orb-thumb: radial-gradient(circle at 35% 28%, #ffffff 0 16%, #86c4ff 30%, #1a62d6 70%, #0b3f99);
+  --orb-thumb-border: #0b3f99;
+
+  /* ---------- LCD ---------- */
+  --lcd-bg: linear-gradient(#c6de8a, #a2c25a);
+  --lcd-flat: #b4d072; /* solid LCD colour for canvases */
+  --lcd-ink: #14220a;
+  --lcd-ink-dim: rgb(20 34 10 / 0.35);
+  --lcd-ink-faint: rgb(20 34 10 / 0.15);
+  --lcd-border: #5d6b44;
+  --chip-bg: #e8eedc;
+  --chip-border: #b9c79a;
+  --chip-text: #22300f;
+
+  /* ---------- balloon tooltip ---------- */
+  --balloon-bg: #ffffe1;
+  --balloon-border: #7a7a5a;
+
+  /* ---------- starburst ---------- */
+  --burst-green: radial-gradient(circle at 40% 35%, #d6ff6a, #5fd11c 60%, #2f8f08);
+
+  /* ---------- desktop / taskbar ---------- */
+  --desk-sky: linear-gradient(#1c63d6 0%, #4c9cf0 35%, #a8dbff 70%, #dff3ff 100%);
+  --desk-sky-base: #4c9cf0;
+  --desk-hill-1: #63c93f;
+  --desk-hill-2: #3f9f22;
+  --desk-hill-3: #55b833;
+  /* Full "Bliss" desktop: hills + clouds + sky. Paint once (fixed, no-repeat). */
+  --desk:
+    radial-gradient(ellipse 70% 45% at 22% 104%, var(--desk-hill-1) 0 55%, var(--desk-hill-2) 75%, rgb(63 159 34 / 0) 76%),
+    radial-gradient(ellipse 80% 38% at 85% 108%, var(--desk-hill-3) 0 60%, rgb(85 184 51 / 0) 61%),
+    radial-gradient(ellipse 18% 6% at 18% 9%, rgb(255 255 255 / 0.9), rgb(255 255 255 / 0) 70%),
+    radial-gradient(ellipse 14% 5% at 26% 11%, rgb(255 255 255 / 0.8), rgb(255 255 255 / 0) 70%),
+    radial-gradient(ellipse 20% 7% at 78% 6%, rgb(255 255 255 / 0.85), rgb(255 255 255 / 0) 70%),
+    radial-gradient(ellipse 12% 4% at 70% 8%, rgb(255 255 255 / 0.7), rgb(255 255 255 / 0) 70%),
+    var(--desk-sky);
+  --bubble: radial-gradient(circle at 32% 28%, rgb(255 255 255 / 0.95) 0 7%, rgb(255 255 255 / 0.3) 20%, rgb(150 215 255 / 0.12) 52%, rgb(255 255 255 / 0.6) 70%, rgb(255 255 255 / 0) 72%);
+  --taskbar: linear-gradient(#3d8af7 0%, #2565de 8%, #1f5ad6 50%, #1c50c4 92%, #16429f 100%);
+  --tray: linear-gradient(#0f8ff0, #0a73d6);
+  --tray-highlight: #3fb4ff;
+
+  /* ---------- per-mode colours (orbs, tiles) ---------- */
+  --mode-presets-1: #ffd84a;
+  --mode-presets-2: #d98f00;
+  --mode-ramp-1: #ffb36b;
+  --mode-ramp-2: #d9561a;
+  --mode-pulse-1: #7fb6ff;
+  --mode-pulse-2: #1f5fd6;
+  --mode-siren-1: #c79bff;
+  --mode-siren-2: #7a3fd6;
+  --mode-random-1: #6fe3d4;
+  --mode-random-2: #0f8a7c;
+  --mode-melody-1: #9fe36a;
+  --mode-melody-2: #3a8f16;
+  --mode-sequencer-1: #ff9bd0;
+  --mode-sequencer-2: #c92e7e;
+  --mode-midi-1: #a3a9ff;
+  --mode-midi-2: #3439c2;
+  --mode-frequency-1: #8ad8ff;
+  --mode-frequency-2: #1a84c9;
+
+  /* ---------- shape & spacing ---------- */
+  --radius-sm: 3px;
+  --radius: 6px;
+  --radius-lg: 10px;
+  --radius-pill: 999px;
 
   --space-1: 4px;
   --space-2: 8px;
@@ -35,14 +155,18 @@
   --space-5: 24px;
   --space-6: 32px;
 
-  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  /* ---------- type ---------- */
+  --font-ui: Tahoma, Verdana, 'Segoe UI', sans-serif;
+  --font-lcd: 'VT323', 'Courier New', monospace;
+  --font-display: 'Michroma', 'Arial Black', sans-serif;
+  --font-sans: var(--font-ui);
+  --font-mono: 'Lucida Console', 'Courier New', ui-monospace, monospace;
 
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
-  --dur: 160ms;
+  --dur: 120ms;
 
-  --control-h: 36px;
+  --control-h: 32px;
   --touch-h: 44px;
 
-  color-scheme: dark;
+  color-scheme: light;
 }

@@ -234,7 +234,7 @@ function MelodyPanel({ params, setParams }: ModePanelProps<MelodyParams>) {
             <Button size="sm" onClick={() => shiftOctave(-1)} disabled={params.octave <= OCTAVE_MIN} title="Octave down (Z)" aria-label="Octave down">
               − Oct
             </Button>
-            <span className="mode-melody__octave-value" aria-live="polite">
+            <span className="mode-melody__octave-value lcd-chip" aria-live="polite">
               {midiToNoteName(startMidi)}
             </span>
             <Button size="sm" onClick={() => shiftOctave(1)} disabled={params.octave >= OCTAVE_MAX} title="Octave up (X)" aria-label="Octave up">

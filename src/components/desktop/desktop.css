@@ -1,0 +1,136 @@
+/* Desktop decor: bubbles, desktop icon column, XP taskbar. */
+.bubbles {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.bubble--1 { width: 120px; height: 120px; left: 3%; top: 520px; }
+.bubble--2 { width: 54px; height: 54px; left: 7%; top: 700px; animation-delay: -3s; }
+.bubble--3 { width: 180px; height: 180px; right: -40px; top: 120px; animation-delay: -5s; }
+.bubble--4 { width: 70px; height: 70px; right: 4%; top: 900px; animation-delay: -2s; }
+.bubble--5 { width: 36px; height: 36px; right: 9%; top: 60px; animation-delay: -7s; }
+
+/* desktop icons */
+.desk-icons {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: 14px;
+  padding-top: 4px;
+}
+.dicon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 92px;
+  padding: 6px 2px;
+  border: 1px dotted transparent;
+  background: transparent;
+  color: var(--titlebar-text);
+  font-size: 12px;
+  text-align: center;
+  text-shadow: 1px 1px 1px var(--text);
+  cursor: pointer;
+}
+.dicon:hover:not(:disabled):not(.dicon--inert) {
+  border-color: var(--tp-body);
+  background: color-mix(in srgb, var(--select-bg) 45%, transparent);
+}
+.dicon:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.dicon--inert {
+  cursor: default;
+  user-select: none;
+}
+
+/* taskbar */
+.xp-taskbar {
+  position: relative;
+  display: flex;
+  flex: none;
+  align-items: stretch;
+  height: 40px;
+}
+.xp-taskbar .gel.xp-start {
+  padding: 0 22px 0 14px;
+  border-radius: 0 16px 16px 0;
+  font-size: 19px;
+  font-style: italic;
+  letter-spacing: 0.02em;
+}
+.xp-quick {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  border-right: 1px solid var(--win-border);
+}
+.xp-tasks {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  min-width: 0;
+  padding: 0 8px;
+}
+.xp-task {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  max-width: 240px;
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 4px;
+  background: linear-gradient(var(--link), var(--blue));
+  box-shadow: inset 1px 1px 2px color-mix(in srgb, var(--text) 45%, transparent);
+  color: var(--titlebar-text);
+  font-size: 12px;
+}
+.xp-task span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.xp-tray {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  color: var(--titlebar-text);
+  font-size: 12px;
+}
+.tray__icon {
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.tray__icon .tray__fill {
+  fill: currentColor;
+  stroke: none;
+}
+.tray__clock {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 760px) {
+  .desk-icons,
+  .xp-quick {
+    display: none;
+  }
+  .xp-taskbar .gel.xp-start {
+    padding: 0 16px 0 10px;
+    font-size: 17px;
+  }
+  .xp-tray {
+    gap: 8px;
+    padding: 0 10px;
+  }
+}

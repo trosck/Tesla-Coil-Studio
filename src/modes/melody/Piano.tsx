@@ -91,7 +91,7 @@ export function Piano({ startMidi, scale, sounding, playing, selected, onPress, 
   return (
     <div
       ref={ref}
-      className="mode-melody-piano"
+      className="mode-melody-piano chrome"
       role="group"
       aria-label={`Piano keyboard ${midiToNoteName(startMidi)} to ${midiToNoteName(startMidi + octaves * 12)}`}
       onPointerDown={down}

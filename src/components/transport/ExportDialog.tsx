@@ -2,7 +2,10 @@ import { useEffect, useRef, useState } from 'react';
 import { MAX_EXPORT_SECONDS, downloadBlob, renderWav, timestampedName } from '../../audio/export/renderWav';
 import type { Playable } from '../../audio/types';
 import { useStudio } from '../../studio/StudioContext';
+import { CloseGlyph, PxWavFolder } from '../shell/icons';
 import { Button, Icon, NumberField, SegmentedControl, Slider } from '../ui';
+import '../shell/shell.css';
+import './transport.css';
 
 type Mode = 'loops' | 'duration';
 
@@ -49,12 +52,17 @@ export function ExportDialog({ playable, onClose }: { playable: Playable; onClos
   };
 
   return (
-    <dialog ref={ref} className="export" aria-labelledby="export-title" onCancel={onClose} onClose={onClose}>
-      <header className="export__head">
-        <h2 id="export-title">Export WAV</h2>
-        <Button variant="ghost" size="sm" aria-label="Close" icon={<Icon name="close" />} onClick={onClose} />
-      </header>
-      <div className="export__body">
+    <dialog ref={ref} className="export xp-dialog win" aria-labelledby="export-title" onCancel={onClose} onClose={onClose}>
+      <div className="titlebar xp-dialog__title">
+        <PxWavFolder size={18} />
+        <h2 id="export-title" className="xp-dialog__title-text">
+          Export WAV
+        </h2>
+        <button type="button" className="wbtn x" aria-label="Close" onClick={onClose}>
+          <CloseGlyph />
+        </button>
+      </div>
+      <div className="export__body xp-dialog__body">
         <SegmentedControl
           aria-label="Export length"
           value={mode}
@@ -82,11 +90,11 @@ export function ExportDialog({ playable, onClose }: { playable: Playable; onClos
             ]}
           />
         </div>
-        <p className="export__fixed mono">44.1 kHz · 16-bit PCM · uses current waveform &amp; duty</p>
+        <p className="export__fixed">44.1 kHz · 16-bit PCM · uses current waveform &amp; duty</p>
         {error && <p className="export__error">{error}</p>}
       </div>
-      <footer className="export__foot">
-        <Button variant="ghost" onClick={onClose}>
+      <footer className="xp-dialog__foot">
+        <Button onClick={onClose}>
           Cancel
         </Button>
         <Button variant="primary" icon={<Icon name="download" />} onClick={doExport} disabled={rendering}>

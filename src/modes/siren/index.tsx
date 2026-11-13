@@ -68,7 +68,7 @@ function SirenPanel({ params, setParams }: ModePanelProps<SirenParams>) {
       <Panel
         title="Sweep"
         actions={
-          <span className="mode-siren__readout">
+          <span className="mode-siren__readout lcd-chip">
             {rate >= 1 ? rate.toFixed(2) : rate.toFixed(3)} cycles/s · {sequence.length.toFixed(1)} s / pass
           </span>
         }
