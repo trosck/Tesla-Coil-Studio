@@ -1,7 +1,11 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
 import './ui.css';
 
-export type ButtonVariant = 'secondary' | 'primary' | 'ghost' | 'danger';
+/**
+ * secondary = silver gel, primary = blue gel, play = green gel,
+ * danger = red gel, ghost = flat XP toolbar button.
+ */
+export type ButtonVariant = 'secondary' | 'primary' | 'play' | 'ghost' | 'danger';
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
@@ -11,8 +15,16 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   pressed?: boolean;
 }
 
+const LOOK: Record<ButtonVariant, string> = {
+  secondary: 'gel gel-silver',
+  primary: 'gel gel-blue',
+  play: 'gel gel-green',
+  danger: 'gel gel-red',
+  ghost: 'flat',
+};
+
 export function Button({ variant = 'secondary', size = 'md', icon, pressed, className, children, type = 'button', ...rest }: ButtonProps) {
-  const cls = ['ui-btn', `ui-btn--${variant}`, size !== 'md' && `ui-btn--${size}`, className].filter(Boolean).join(' ');
+  const cls = ['ui-btn', `ui-btn--${variant}`, LOOK[variant], size !== 'md' && `ui-btn--${size}`, className].filter(Boolean).join(' ');
   return (
     <button type={type} className={cls} aria-pressed={pressed} {...rest}>
       {icon && (
