@@ -12,7 +12,7 @@
  * This mode has providesPlayable: false, so opening it never changes what the
  * transport plays.
  */
-import { useId, useMemo, useRef, useState, useSyncExternalStore, type FormEvent } from 'react';
+import { useId, useMemo, useRef, useState, useSyncExternalStore, type SubmitEvent } from 'react';
 import { openGuide } from '../../components/shell/guideStore';
 import { Button, Icon, SegmentedControl, Select } from '../../components/ui';
 import { BUILT_IN_PRESETS, FEATURED_PRESET_IDS } from '../../presets/builtIn';
@@ -110,7 +110,7 @@ function PresetCard({ preset, modeLabel, loaded, playing, onSelect, onPlay, onEd
   const ids = useId();
   const chips = useMemo(() => summarizePreset(preset), [preset]);
 
-  const submitRename = (e: FormEvent) => {
+  const submitRename = (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     onRename?.(name, desc);
     setEditing(false);
@@ -233,7 +233,7 @@ function SaveForm({ modes, defaultMode, onSaved }: { modes: readonly AnyModeDefi
   const label = savable.find((m) => m.id === mode)?.label ?? mode;
   const fallbackName = `My ${label.toLowerCase()} preset`;
 
-  const submit = (e: FormEvent) => {
+  const submit = (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     const p = saveUserPreset({ name: name.trim() || fallbackName, mode, params: getParams(mode), description: desc });
     setName('');

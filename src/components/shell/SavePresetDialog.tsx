@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useId, useRef, useState, type SubmitEvent } from 'react';
 import { useBackdropClose } from '../../lib/useBackdropClose';
 import { MAX_DESCRIPTION_LENGTH, MAX_NAME_LENGTH } from '../../presets/io';
 import { saveUserPreset } from '../../presets/storage';
@@ -26,7 +26,7 @@ export function SavePresetDialog({ onClose, onSaved }: { onClose: () => void; on
     if (d && !d.open) d.showModal();
   }, []);
 
-  const submit = (e: FormEvent) => {
+  const submit = (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     const p = saveUserPreset({ name: name.trim() || fallbackName, mode: sourceModeId, params: getParams(sourceModeId), description: desc });
     onSaved(p);
