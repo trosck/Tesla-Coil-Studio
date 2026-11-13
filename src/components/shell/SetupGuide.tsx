@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useBackdropClose } from '../../lib/useBackdropClose';
 import { BUILT_IN_PRESETS } from '../../presets/builtIn';
 import { useStudio } from '../../studio/StudioContext';
 import { Button, Icon } from '../ui';
@@ -35,6 +36,7 @@ const TIPS = [
 /** First-visit setup guide (modal). Rendered by App while guideStore.open is true. */
 export function SetupGuide() {
   const ref = useRef<HTMLDialogElement>(null);
+  const backdrop = useBackdropClose(closeGuide);
   const { loadPreset } = useStudio();
 
   useEffect(() => {
@@ -49,7 +51,7 @@ export function SetupGuide() {
   };
 
   return (
-    <dialog ref={ref} className="guide xp-dialog win" aria-labelledby="guide-title" onCancel={closeGuide} onClose={closeGuide}>
+    <dialog ref={ref} className="guide xp-dialog win" aria-labelledby="guide-title" onCancel={closeGuide} onClose={closeGuide} {...backdrop}>
       <div className="titlebar xp-dialog__title">
         <PxTextFile size={18} />
         <span className="xp-dialog__title-text">Setup guide.txt</span>

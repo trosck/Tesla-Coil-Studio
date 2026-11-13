@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
+import { useBackdropClose } from '../../lib/useBackdropClose';
 import { MAX_DESCRIPTION_LENGTH, MAX_NAME_LENGTH } from '../../presets/io';
 import { saveUserPreset } from '../../presets/storage';
 import type { Preset } from '../../presets/types';
@@ -11,6 +12,7 @@ import './shell.css';
 export function SavePresetDialog({ onClose, onSaved }: { onClose: () => void; onSaved: (p: Preset) => void }) {
   const { modes, sourceModeId, getParams } = useStudio();
   const ref = useRef<HTMLDialogElement>(null);
+  const backdrop = useBackdropClose(onClose);
   const ids = useId();
   const [name, setName] = useState('');
   const [desc, setDesc] = useState('');
@@ -32,7 +34,7 @@ export function SavePresetDialog({ onClose, onSaved }: { onClose: () => void; on
   };
 
   return (
-    <dialog ref={ref} className="xp-dialog win" aria-labelledby={`${ids}-title`} onCancel={onClose} onClose={onClose}>
+    <dialog ref={ref} className="xp-dialog win" aria-labelledby={`${ids}-title`} onCancel={onClose} onClose={onClose} {...backdrop}>
       <div className="titlebar xp-dialog__title">
         <span id={`${ids}-title`} className="xp-dialog__title-text">
           Save current settings

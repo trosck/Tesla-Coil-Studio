@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useBackdropClose } from '../../lib/useBackdropClose';
 import { MAX_EXPORT_SECONDS, downloadBlob, renderWav, timestampedName } from '../../audio/export/renderWav';
 import type { Playable } from '../../audio/types';
 import { useStudio } from '../../studio/StudioContext';
@@ -12,6 +13,7 @@ type Mode = 'loops' | 'duration';
 export function ExportDialog({ playable, onClose }: { playable: Playable; onClose: () => void }) {
   const { engine } = useStudio();
   const ref = useRef<HTMLDialogElement>(null);
+  const backdrop = useBackdropClose(onClose);
   const [mode, setMode] = useState<Mode>('loops');
   const [loops, setLoops] = useState(4);
   const [duration, setDuration] = useState(30);
@@ -52,7 +54,7 @@ export function ExportDialog({ playable, onClose }: { playable: Playable; onClos
   };
 
   return (
-    <dialog ref={ref} className="export xp-dialog win" aria-labelledby="export-title" onCancel={onClose} onClose={onClose}>
+    <dialog ref={ref} className="export xp-dialog win" aria-labelledby="export-title" onCancel={onClose} onClose={onClose} {...backdrop}>
       <div className="titlebar xp-dialog__title">
         <PxWavFolder size={18} />
         <h2 id="export-title" className="xp-dialog__title-text">
