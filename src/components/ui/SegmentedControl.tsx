@@ -7,6 +7,8 @@ export interface SegmentOption<T extends string> {
   /** Small badge, e.g. "recommended". */
   badge?: string;
   title?: string;
+  /** Accessible name when the visible label is abbreviated. */
+  ariaLabel?: string;
 }
 
 export interface SegmentedControlProps<T extends string> {
@@ -42,6 +44,7 @@ export function SegmentedControl<T extends string>({ value, options, onChange, c
             aria-checked={on}
             tabIndex={on ? 0 : -1}
             title={o.title}
+            aria-label={o.ariaLabel}
             className="ui-seg__opt gel"
             onClick={() => onChange(o.value)}
           >

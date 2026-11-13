@@ -1,4 +1,4 @@
-/** Open/close state of the Export WAV dialog (opened from the deck, desktop icon and task pane). */
+/** Open/close state of the Export WAV dialog (opened from the player dock, desktop icon and task pane). */
 import { createStore } from '../../lib/store';
 
 export const exportStore = createStore({ open: false });

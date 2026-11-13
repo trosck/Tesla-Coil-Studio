@@ -8,7 +8,9 @@
   border: 1px solid var(--win-border);
   border-radius: 10px 10px 4px 4px;
   box-shadow: var(--win-shadow);
-  overflow: hidden;
+  /* clip, not hidden: keeps the rounded corners without becoming a scroll
+     container, so position: sticky inside (the player dock) still works. */
+  overflow: clip;
 }
 .titlebar {
   display: flex;
@@ -276,17 +278,17 @@ button.wbtn:hover {
   border-radius: 8px;
   box-shadow: 2px 3px 6px rgb(0 0 0 / 0.25);
 }
-/* Optional pointer on the top edge: add .balloon--tail. */
-.balloon--tail::before {
+/* Optional pointer on the bottom edge (pointing down): add .balloon--tail-bottom. */
+.balloon--tail-bottom::before {
   content: '';
   position: absolute;
-  top: -9px;
+  bottom: -9px;
   left: 40px;
   width: 16px;
   height: 16px;
   background: var(--balloon-bg);
-  border-left: 1px solid var(--balloon-border);
-  border-top: 1px solid var(--balloon-border);
+  border-right: 1px solid var(--balloon-border);
+  border-bottom: 1px solid var(--balloon-border);
   transform: rotate(45deg);
 }
 

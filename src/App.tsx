@@ -32,11 +32,11 @@ export function App() {
             <TitleBar />
             <MenuBar />
             <Header />
-            <TransportBar />
             <div className="app-body">
               <TaskPane />
               <Explorer />
             </div>
+            <TransportBar />
           </section>
           <SafetyNotice />
         </div>

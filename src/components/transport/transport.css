@@ -1,110 +1,63 @@
-/* Player deck: brushed-chrome console with the LCD, gel transport keys and sliders. */
-.deck {
-  padding: 16px 18px 6px;
-}
-.deck__body {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  padding: 14px;
-  border-radius: 22px;
-  box-shadow: inset 0 1px 0 var(--surface), 0 3px 8px color-mix(in srgb, var(--win-border) 30%, transparent);
-}
-.deck__controls {
-  flex: 1 1 360px;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding: 4px 4px 2px;
-}
-.deck__buttons {
+/* Player dock: one brushed-chrome bar pinned to the bottom of the main window
+   (sticky inside .app-win, so it rests on the window's bottom edge when fully
+   scrolled). LCD strip + gel transport keys + toggles + settings. */
+.chrome.dock {
+  position: sticky;
+  bottom: 0;
+  z-index: 30;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 16px;
+  gap: 12px 16px;
+  padding: 10px 14px calc(10px + env(safe-area-inset-bottom, 0px));
+  border-width: 1px 0 0;
+  box-shadow: inset 0 1px 0 var(--surface), 0 -4px 10px color-mix(in srgb, var(--win-border) 20%, transparent);
 }
-.deck__keys {
-  display: flex;
-  align-items: flex-end;
-  gap: 12px;
-}
-.deck__toggles {
-  display: flex;
-  flex: 1 1 160px;
-  flex-direction: column;
-  gap: 8px;
-}
-.deck-label {
+.dock-label {
+  flex: none;
+  width: 40px;
   font-size: 11px;
   font-weight: bold;
   letter-spacing: 0.14em;
   color: var(--text-dim);
 }
-.deck-long {
-  white-space: nowrap;
-}
-.deck-mono {
+.dock-mono {
   font-variant-numeric: tabular-nums;
 }
 
 /* round gel keys */
-.deck-key {
+.dock__keys {
+  position: relative;
   display: flex;
-  flex-direction: column;
+  flex: none;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
+}
+.gel.dock-key {
+  width: 42px;
+  height: 42px;
   padding: 0;
-  border: 0;
-  border-radius: var(--radius);
-  background: none;
-  color: var(--text-dim);
-  cursor: pointer;
-  touch-action: manipulation;
 }
-.deck-key__gel {
-  width: 54px;
-  height: 54px;
+.gel.dock-key svg {
+  width: 16px;
+  height: 16px;
 }
-.deck-key__gel svg {
-  width: 20px;
-  height: 20px;
+.gel.dock-key--main {
+  width: 60px;
+  height: 60px;
 }
-.deck-key--main .deck-key__gel {
-  width: 76px;
-  height: 76px;
+.gel.dock-key--main svg {
+  width: 26px;
+  height: 26px;
 }
-.deck-key--main .deck-key__gel svg {
-  width: 30px;
-  height: 30px;
+.dock-key--playing {
+  animation: dock-glow 1.6s ease-in-out infinite;
 }
-.deck-key__label {
-  font-size: 11px;
-  font-weight: bold;
-  letter-spacing: 0.12em;
-  white-space: nowrap;
+.gel.dock-key--playing:disabled {
+  filter: none;
+  cursor: default;
 }
-.deck-key:hover:not(:disabled) > .gel {
-  filter: brightness(1.08) saturate(1.1);
-}
-.deck-key:active:not(:disabled) > .gel {
-  transform: translateY(1px);
-  filter: brightness(0.94);
-}
-.deck-key:disabled {
-  cursor: not-allowed;
-}
-.deck-key:disabled > .gel.gel {
-  filter: grayscale(0.7) opacity(0.55);
-  cursor: not-allowed;
-}
-.deck-key:disabled .deck-key__label {
-  opacity: 0.6;
-}
-.deck-key--playing > .gel {
-  animation: deck-glow 1.6s ease-in-out infinite;
-}
-@keyframes deck-glow {
+@keyframes dock-glow {
   0%,
   100% {
     box-shadow: var(--gel-shadow), 0 0 0 2px var(--surface), 0 0 0 3px var(--ok);
@@ -114,127 +67,134 @@
   }
 }
 
-/* LOOP / RECORD / EXPORT WAV */
-.ui-btn.deck-toggle {
-  height: 34px;
-  min-height: 34px;
-}
-
-/* sliders */
-.deck-slider {
+/* LOOP / REC / EXPORT WAV */
+.dock__toggles {
   display: flex;
+  flex: none;
   flex-direction: column;
   gap: 4px;
+  width: 112px;
 }
-.deck-slider__head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--space-2);
-}
-.deck-slider__chip--off {
-  opacity: 0.5;
-}
-.deck-slider__hint {
+.ui-btn.dock-toggle {
+  min-height: 26px;
+  height: 26px;
+  padding: 0 10px;
   font-size: 11px;
-  color: var(--text-faint);
-}
-.deck-wave {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.deck-wave .ui-seg__opt {
-  min-height: 34px;
-  padding: 0 14px;
-  font-size: 13px;
+  letter-spacing: 0.04em;
 }
 
-/* "Tap PLAY" balloon */
-.deck__tip {
+/* VOL / WAVE / DUTY */
+.dock__settings {
+  display: flex;
+  flex: 0 1 300px;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 240px;
+}
+.dock-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.dock-slider {
+  position: relative;
+  display: flex;
+  flex: 1;
+  align-items: center;
+  min-width: 0;
+}
+.dock-slider__hint {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  padding: 0 6px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text-dim);
+  font-size: 10px;
+  white-space: nowrap;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}
+.lcd-chip.dock-chip {
+  flex: none;
+  width: 48px;
+  padding: 0 4px;
+  border-radius: 5px;
+  font-size: 18px;
+  text-align: center;
+}
+.dock-chip--off {
+  opacity: 0.5;
+}
+.ui-seg.dock-wave {
+  flex: 1;
+  flex-wrap: nowrap;
+  gap: 3px;
+  min-width: 0;
+}
+.dock-wave .ui-seg__opt {
+  flex: 1;
+  min-width: 0;
+  min-height: 26px;
+  height: 26px;
+  padding: 0 4px;
+  font-size: 11px;
+}
+
+/* "Tap PLAY" balloon: floats above the dock, tail pointing down at PLAY */
+.dock__tip {
+  position: absolute;
+  bottom: calc(100% + 16px);
+  left: 0;
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  max-width: 760px;
-  margin: 14px 0 4px 40px;
+  width: max-content;
+  max-width: min(420px, calc(100vw - 40px));
   padding: 10px 14px;
 }
-.deck__tip p {
+/* tail centred over the 60px PLAY key */
+.dock__tip.balloon--tail-bottom::before {
+  left: 22px;
+}
+.dock__tip p {
   margin: 0;
   font-size: 13px;
   line-height: 1.45;
 }
 
-/* Phones: the six transport buttons become a fixed compact chrome bar at the bottom. */
-@media (max-width: 760px) {
-  .deck {
-    padding: 10px 8px 4px;
-  }
-  .deck__body {
-    gap: 12px;
-    padding: 10px;
-    border-radius: 16px;
-  }
-  .deck__controls {
+/* Narrow desktops / tablets: LCD on its own row, controls below. */
+@media (max-width: 1180px) {
+  .lcd.dock-lcd {
     flex-basis: 100%;
-    padding: 0;
   }
-  .deck__buttons {
-    position: fixed;
-    z-index: 40;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    display: grid;
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-    gap: var(--space-1);
-    padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px));
-    border-top: 1px solid var(--chrome-border);
-    background: var(--chrome);
-    box-shadow: inset 0 1px 0 var(--surface), 0 -4px 14px color-mix(in srgb, var(--win-border) 35%, transparent);
+  .dock__settings {
+    flex: 1 1 260px;
   }
-  .deck__keys,
-  .deck__toggles {
-    display: contents;
+}
+
+/* Phones: LCD, then keys + toggles, then settings. */
+@media (max-width: 760px) {
+  .chrome.dock {
+    gap: 8px 12px;
+    padding: 8px 8px calc(8px + env(safe-area-inset-bottom, 0px));
   }
-  .deck-key,
-  .deck-toggle.ui-btn {
-    justify-content: center;
+  .dock__toggles {
+    flex: 1 1 112px;
+    width: auto;
+  }
+  .dock__settings {
+    flex-basis: 100%;
     min-width: 0;
-    height: 54px;
-    min-height: 54px;
   }
-  .deck-key__gel,
-  .deck-key--main .deck-key__gel {
-    width: 36px;
-    height: 36px;
+  .dock__tip {
+    max-width: calc(100vw - 48px);
   }
-  .deck-key__gel svg,
-  .deck-key--main .deck-key__gel svg {
-    width: 16px;
-    height: 16px;
-  }
-  .deck-key__label {
-    font-size: 10px;
-    letter-spacing: 0.04em;
-  }
-  .deck-toggle.ui-btn {
-    flex-direction: column;
-    gap: 2px;
-    padding: 4px 2px;
-    border-radius: 12px;
-    font-size: 10px;
-    letter-spacing: 0.04em;
-  }
-  .deck-toggle .ui-btn__icon {
-    width: 18px;
-    height: 18px;
-  }
-  .deck-long {
-    display: none;
-  }
-  .deck__tip {
-    margin: 12px 0 4px 8px;
+  .dock__tip p {
+    font-size: 12px;
   }
 }
 

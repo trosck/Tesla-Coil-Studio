@@ -47,8 +47,6 @@
 .app-body {
   display: flex;
   flex-wrap: wrap;
-  margin-top: 10px;
-  border-top: 1px solid var(--menu-border);
 }
 .explorer {
   display: flex;
@@ -179,10 +177,6 @@
 }
 
 @media (max-width: 760px) {
-  .desk {
-    /* room for the fixed transport bar */
-    padding-bottom: calc(66px + env(safe-area-inset-bottom, 0px));
-  }
   .desk__main {
     gap: 0;
     padding: 12px 8px 16px;

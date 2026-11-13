@@ -4,11 +4,6 @@ import { cssVar, startCanvasLoop } from './canvasLoop';
 
 const F_MIN = 40;
 const F_MAX = 12000;
-const LABELS: [number, string][] = [
-  [100, '100'],
-  [1000, '1k'],
-  [10000, '10k'],
-];
 const SEG = 3; // LCD segment height (px)
 const GAP = 2; // gap between segments (px)
 
@@ -20,13 +15,11 @@ export function Spectrum({ engine }: { engine: AudioEngine }) {
     if (!canvas) return;
     const ink = cssVar('--lcd-ink', '#14220a');
     const faint = cssVar('--lcd-ink-faint', 'rgb(20 34 10 / 0.15)');
-    const font = cssVar('--font-lcd', 'monospace');
     let data: Uint8Array<ArrayBuffer> | null = null;
     return startCanvasLoop(canvas, (ctx, w, h) => {
       ctx.clearRect(0, 0, w, h);
       const an = engine.analyser;
-      const labelH = 15;
-      const plotH = h - labelH - 3;
+      const plotH = h - 2;
       const bars = Math.max(16, Math.min(48, Math.floor(w / 7)));
       const bw = w / bars;
       const segs = Math.max(1, Math.floor((plotH + GAP) / (SEG + GAP)));
@@ -56,14 +49,6 @@ export function Spectrum({ engine }: { engine: AudioEngine }) {
           if (s >= lit && s > 0) break;
           ctx.fillRect(x, plotH - (s + 1) * (SEG + GAP) + GAP, bwi, SEG);
         }
-      }
-      ctx.fillStyle = ink;
-      ctx.font = `14px ${font}`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'alphabetic';
-      for (const [f, text] of LABELS) {
-        const x = (Math.log(f / F_MIN) / Math.log(F_MAX / F_MIN)) * w;
-        ctx.fillText(text, x, h - 2);
       }
     });
   }, [engine]);
